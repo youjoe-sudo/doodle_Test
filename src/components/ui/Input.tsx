@@ -6,6 +6,7 @@ export const Input = ({
   value,
   onChange,
   required,
+  disabled,
   ...props
 }: {
   type?: string;
