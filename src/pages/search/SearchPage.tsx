@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { ProductCard } from '@components/products/ProductCard';
 import { supabase } from '@lib/supabase/client';
 import { useDebounce } from '@hooks/useDebounce';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 const PAGE_SIZE = 12;
 
@@ -27,6 +28,8 @@ export const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState(params.get('q') || '');
 
   const debouncedQuery = useDebounce(searchQuery, 400);
+
+  useDocumentTitle(debouncedQuery ? `نتائج البحث عن "${debouncedQuery}"` : 'البحث');
 
   // Reset page when query changes
   useEffect(() => {

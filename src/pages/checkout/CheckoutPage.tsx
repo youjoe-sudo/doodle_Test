@@ -4,6 +4,7 @@ import { supabase } from '@lib/supabase/client';
 import { useAuth } from '@contexts/AuthContext';
 import { useCart } from '@hooks/useCart';
 import { MapPin, Upload, Loader2, Tag, CheckCircle } from 'lucide-react';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 const EGYPT_GOVERNORATES = [
   'القاهرة', 'الجيزة', 'الإسكندرية', 'الدقهلية', 'البحيرة', 'المنوفية',
@@ -14,6 +15,7 @@ const EGYPT_GOVERNORATES = [
 ];
 
 export const CheckoutPage = () => {
+  useDocumentTitle('إتمام الطلب');
   const { user } = useAuth();
   const { items, cartTotal, clearCart } = useCart();
   const navigate = useNavigate();

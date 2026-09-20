@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@lib/supabase/client';
 import { ProductCard } from '@components/products/ProductCard';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 const PAGE_SIZE = 12;
 
@@ -23,6 +24,8 @@ export const CategoriesPage = () => {
   const [currentCategoryId, setCurrentCategoryId] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
+
+  useDocumentTitle('التصنيفات');
 
   useEffect(() => {
     fetchData();

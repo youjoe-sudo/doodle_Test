@@ -1,7 +1,9 @@
 import { useCart } from '@hooks/useCart';
 import { useNavigate } from 'react-router-dom';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 export const CartPage = () => {
+  useDocumentTitle('سلة التسوق');
   const { items, cartTotal, cartCount, removeItem, increaseQuantity, decreaseQuantity } = useCart();
   const navigate = useNavigate();
 

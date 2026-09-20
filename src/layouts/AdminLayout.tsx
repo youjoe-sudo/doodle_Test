@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 import {
   LayoutDashboard, Package, Tags, ShoppingCart, Box, Users, UserCog, Star,
-  LifeBuoy, Truck, CreditCard, Settings, LogOut, Ticket, Menu, X, Bell,
+  LifeBuoy, Truck, CreditCard, Settings, LogOut, Ticket, Menu, X, Bell, Palette,
 } from 'lucide-react';
 
 const sidebarLinks = [
@@ -19,6 +19,7 @@ const sidebarLinks = [
   { to: '/admin/shipping', icon: Truck, label: 'الشحن' },
   { to: '/admin/payments', icon: CreditCard, label: 'المدفوعات' },
   { to: '/admin/notifications', icon: Bell, label: 'الإشعارات' },
+  { to: '/admin/coloring', icon: Palette, label: 'صفحات التلوين' },
   { to: '/admin/settings', icon: Settings, label: 'الإعدادات' },
 ];
 
@@ -36,7 +37,7 @@ export const AdminLayout = () => {
     <>
       <div className="p-5 border-b-2 border-line">
         <Link to="/admin" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
-          <img src="/logo.svg" alt="Doodle Room" className="w-10 h-10" />
+          <img src="/logo.jpg" alt="Doodle Room" className="w-10 h-10 object-contain rounded-md" />
           <div>
             <h1 className="font-bold text-ink leading-none text-base" style={{ fontFamily: 'Outfit, sans-serif' }}>Doodle Room</h1>
             <p className="text-[11px] text-muted">Admin Panel</p>
@@ -117,7 +118,7 @@ export const AdminLayout = () => {
               <Menu className="w-6 h-6 text-ink" />
             </button>
             <Link to="/admin" className="flex items-center gap-2">
-              <img src="/logo.svg" alt="Admin" className="w-8 h-8" />
+              <img src="/logo.jpg" alt="Doodle Room" className="w-10 h-10 object-contain rounded-md" />
               <span className="font-bold text-ink" style={{ fontFamily: 'Outfit, sans-serif' }}>Admin</span>
             </Link>
             <Link to="/" className="text-sm text-muted hover:text-ink">المتجر</Link>

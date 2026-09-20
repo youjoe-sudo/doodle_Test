@@ -1,7 +1,9 @@
 import { useAuth } from '@contexts/AuthContext';
 import { useState, useEffect } from 'react';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 export const ResetPasswordPage = () => {
+  useDocumentTitle('إعادة تعيين كلمة المرور');
   const { resetPassword } = useAuth();
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);

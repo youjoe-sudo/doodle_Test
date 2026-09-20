@@ -1,4 +1,7 @@
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
+
 export const AboutPage = () => {
+  useDocumentTitle('قصتنا');
   return (
     <section className="py-24 md:py-32 bg-cream">
       <div className="max-w-7xl mx-auto px-6">

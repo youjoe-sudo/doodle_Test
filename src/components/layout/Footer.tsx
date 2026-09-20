@@ -14,7 +14,7 @@ export const Footer = () => {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-6">
-              <img src="/logo.svg" alt="Doodle Room" className="w-12 h-12" />
+              <img src="/logo.jpg" alt="Doodle Room" className="w-12 h-12 object-contain rounded-md" />
               <div>
                 <h3 className="text-xl font-display font-bold text-white leading-none">Doodle Room</h3>
                 <p className="text-xs text-white/50 font-body tracking-wider">Small Books Big Dreams</p>

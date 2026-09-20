@@ -62,7 +62,7 @@ CREATE POLICY "Public can read site_settings"
 CREATE POLICY "Admins can manage site_settings"
   ON public.site_settings FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- Insert default store configuration so the app never crashes on first fetch
@@ -167,7 +167,7 @@ CREATE POLICY "Public can read categories"
 CREATE POLICY "Admins can manage categories"
   ON public.categories FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- ============================================================
@@ -201,7 +201,7 @@ CREATE POLICY "Public can read published products"
 CREATE POLICY "Admins can manage products"
   ON public.products FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- ============================================================
@@ -224,7 +224,7 @@ CREATE POLICY "Public can read product images"
 CREATE POLICY "Admins can manage product images"
   ON public.product_images FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- ============================================================
@@ -249,7 +249,7 @@ ALTER TABLE public.payment_methods ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admins can manage payment methods"
   ON public.payment_methods FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- Public view that excludes sensitive account_identifier
@@ -316,7 +316,7 @@ CREATE POLICY "Users can insert own orders"
 CREATE POLICY "Admins can manage orders"
   ON public.orders FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- ============================================================
@@ -345,7 +345,7 @@ CREATE POLICY "Users can read own order items"
 CREATE POLICY "Admins can manage order items"
   ON public.order_items FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- ============================================================
@@ -374,7 +374,7 @@ CREATE POLICY "Users can read own payments"
 CREATE POLICY "Admins can manage payments"
   ON public.payments FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- ============================================================
@@ -418,7 +418,7 @@ CREATE POLICY "Public can validate coupons"
 CREATE POLICY "Admins can manage coupons"
   ON public.coupons FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- ============================================================
@@ -446,7 +446,7 @@ CREATE POLICY "Users can create tickets"
 CREATE POLICY "Admins can manage tickets"
   ON public.support_tickets FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- ============================================================
@@ -477,7 +477,7 @@ CREATE POLICY "Users can send messages on own tickets"
 CREATE POLICY "Admins can manage all messages"
   ON public.support_messages FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- ============================================================
@@ -508,6 +508,12 @@ VALUES
   ('avatars', 'avatars', true, 2097152, ARRAY['image/jpeg','image/png','image/webp'])
 ON CONFLICT (id) DO NOTHING;
 
+-- Coloring files bucket (public read, admin write)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES
+  ('coloring_files', 'coloring_files', true, 10485760, ARRAY['image/png','image/jpeg','image/jpg','application/pdf'])
+ON CONFLICT (id) DO NOTHING;
+
 -- ============================================================
 -- 17. STORAGE RLS POLICIES
 -- ============================================================
@@ -522,21 +528,21 @@ CREATE POLICY "Products bucket: admin write"
   ON storage.objects FOR INSERT
   WITH CHECK (
     bucket_id = 'products'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 CREATE POLICY "Products bucket: admin update"
   ON storage.objects FOR UPDATE
   USING (
     bucket_id = 'products'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 CREATE POLICY "Products bucket: admin delete"
   ON storage.objects FOR DELETE
   USING (
     bucket_id = 'products'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 -- Categories: public read
@@ -549,21 +555,21 @@ CREATE POLICY "Categories bucket: admin write"
   ON storage.objects FOR INSERT
   WITH CHECK (
     bucket_id = 'categories'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 CREATE POLICY "Categories bucket: admin update"
   ON storage.objects FOR UPDATE
   USING (
     bucket_id = 'categories'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 CREATE POLICY "Categories bucket: admin delete"
   ON storage.objects FOR DELETE
   USING (
     bucket_id = 'categories'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 -- Receipts: user can upload to own folder
@@ -572,7 +578,7 @@ CREATE POLICY "Receipts bucket: user upload"
   WITH CHECK (
     bucket_id = 'receipts'
     AND auth.role() = 'authenticated'
-    AND (storage.foldername())[1] = auth.uid()::text
+    AND SPLIT_PART(name, '/', 1) = auth.uid()::text
   );
 
 -- Receipts: user can read own receipts
@@ -580,7 +586,7 @@ CREATE POLICY "Receipts bucket: user read own"
   ON storage.objects FOR SELECT
   USING (
     bucket_id = 'receipts'
-    AND (storage.foldername())[1] = auth.uid()::text
+    AND SPLIT_PART(name, '/', 1) = auth.uid()::text
   );
 
 -- Receipts: admin can read all
@@ -602,7 +608,28 @@ CREATE POLICY "Avatars bucket: user upload own"
   WITH CHECK (
     bucket_id = 'avatars'
     AND auth.role() = 'authenticated'
-    AND (storage.foldername())[1] = auth.uid()::text
+    AND SPLIT_PART(name, '/', 1) = auth.uid()::text
+  );
+
+-- Coloring files: public read
+CREATE POLICY "Coloring files: public read"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'coloring_files');
+
+-- Coloring files: authenticated upload
+CREATE POLICY "Coloring files: authenticated upload"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'coloring_files'
+    AND auth.role() = 'authenticated'
+  );
+
+-- Coloring files: admin delete
+CREATE POLICY "Coloring files: admin delete"
+  ON storage.objects FOR DELETE
+  USING (
+    bucket_id = 'coloring_files'
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 -- ============================================================
@@ -625,7 +652,52 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- ============================================================
--- 19. GRANTS (minimum privilege model)
+-- 19. FREEMIUM COLORING LIBRARY
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.coloring_pages (
+  id          UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title       TEXT NOT NULL,
+  file_url    TEXT NOT NULL,
+  price       DECIMAL(10,2) DEFAULT 20.00,
+  is_free_tier BOOLEAN DEFAULT false,
+  sort_order  INTEGER DEFAULT 0,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.user_unlocked_pages (
+  id          UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  page_id     UUID NOT NULL REFERENCES public.coloring_pages(id) ON DELETE CASCADE,
+  unlocked_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, page_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_coloring_pages_free ON public.coloring_pages(is_free_tier);
+CREATE INDEX IF NOT EXISTS idx_user_unlocked_user ON public.user_unlocked_pages(user_id);
+
+ALTER TABLE public.coloring_pages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_unlocked_pages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "coloring_pages_select" ON public.coloring_pages FOR SELECT USING (true);
+CREATE POLICY "coloring_pages_insert" ON public.coloring_pages FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'));
+CREATE POLICY "coloring_pages_update" ON public.coloring_pages FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'));
+CREATE POLICY "coloring_pages_delete" ON public.coloring_pages FOR DELETE USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'));
+
+CREATE POLICY "user_unlocked_select_own" ON public.user_unlocked_pages
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "user_unlocked_select_admin" ON public.user_unlocked_pages
+  FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'));
+CREATE POLICY "user_unlocked_insert_admin" ON public.user_unlocked_pages
+  FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'));
+CREATE POLICY "user_unlocked_delete_admin" ON public.user_unlocked_pages
+  FOR DELETE USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'));
+
+-- ============================================================
+-- 20. GRANTS (minimum privilege model)
 -- ============================================================
 
 -- Authenticated users: only INSERT/UPDATE on tables they legitimately write to
@@ -650,6 +722,55 @@ GRANT SELECT ON public.site_settings TO anon;
 GRANT SELECT ON public.product_images TO anon;
 GRANT SELECT ON public.payment_methods_public TO anon;
 GRANT SELECT ON public.shipping_methods TO anon;
+
+-- Coloring library
+GRANT SELECT ON public.coloring_pages TO authenticated, anon;
+GRANT INSERT, UPDATE, DELETE ON public.coloring_pages TO authenticated;
+GRANT SELECT, INSERT, DELETE ON public.user_unlocked_pages TO authenticated;
+
+-- ============================================================
+-- 21. USER ARTWORKS PERSISTENCE
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.user_artworks (
+  id          UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  page_id     UUID NOT NULL REFERENCES public.coloring_pages(id) ON DELETE CASCADE,
+  canvas_data JSONB,
+  preview_url TEXT,
+  updated_at  TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, page_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_artworks_user ON public.user_artworks(user_id);
+
+ALTER TABLE public.user_artworks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "user_artworks_select_own" ON public.user_artworks
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "user_artworks_select_admin" ON public.user_artworks
+  FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'));
+CREATE POLICY "user_artworks_insert_own" ON public.user_artworks
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "user_artworks_update_own" ON public.user_artworks
+  FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "user_artworks_delete_own" ON public.user_artworks
+  FOR DELETE USING (auth.uid() = user_id);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_artworks TO authenticated;
+
+-- User artworks storage bucket (public for preview display, RLS protects data)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES
+  ('user_artworks', 'user_artworks', true, 5242880, ARRAY['image/png','image/jpeg'])
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "User artworks: user read own" ON storage.objects
+  FOR SELECT USING (bucket_id = 'user_artworks' AND SPLIT_PART(name, '/', 1) = auth.uid()::text);
+CREATE POLICY "User artworks: user upload own" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'user_artworks' AND auth.role() = 'authenticated' AND SPLIT_PART(name, '/', 1) = auth.uid()::text);
+CREATE POLICY "User artworks: user delete own" ON storage.objects
+  FOR DELETE USING (bucket_id = 'user_artworks' AND SPLIT_PART(name, '/', 1) = auth.uid()::text);
 
 -- ============================================================
 -- DONE

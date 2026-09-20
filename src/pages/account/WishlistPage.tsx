@@ -1,8 +1,10 @@
 import { supabase } from '@lib/supabase/client';
 import { useAuth } from '@contexts/AuthContext';
 import { useState, useEffect } from 'react';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 export const WishlistPage = () => {
+  useDocumentTitle('المفضلة');
   const { user } = useAuth();
   const [items, setItems] = useState<Array<any>>([]);
   const [loading, setLoading] = useState(true);

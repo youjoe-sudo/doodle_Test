@@ -1,8 +1,10 @@
 import { useAuth } from '@contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link, useLocation } from 'react-router-dom';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 export const LoginPage = () => {
+  useDocumentTitle('تسجيل الدخول');
   const { login, user, profile, profileLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,7 +21,7 @@ export const LoginPage = () => {
     if (user && !profileLoading && profile) {
       if (redirectTo) {
         navigate(redirectTo, { replace: true });
-      } else if (profile.role === 'admin' || profile.role === 'superadmin') {
+      } else if (profile.role === 'superadmin' || profile.role === 'admin') {
         navigate('/admin', { replace: true });
       } else {
         navigate('/', { replace: true });

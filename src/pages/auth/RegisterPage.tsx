@@ -1,8 +1,10 @@
 import { useAuth } from '@contexts/AuthContext';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 export const RegisterPage = () => {
+  useDocumentTitle('إنشاء حساب');
   const { register } = useAuth();
   const navigate = useNavigate();
   const [fullName, setFullName] = useState('');

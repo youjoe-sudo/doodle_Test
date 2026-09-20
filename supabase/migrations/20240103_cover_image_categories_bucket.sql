@@ -28,7 +28,7 @@ DO $$ BEGIN
     ON storage.objects FOR INSERT
     WITH CHECK (
       bucket_id = 'categories'
-      AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+      AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
     );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
@@ -38,7 +38,7 @@ DO $$ BEGIN
     ON storage.objects FOR UPDATE
     USING (
       bucket_id = 'categories'
-      AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+      AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
     );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
@@ -48,7 +48,7 @@ DO $$ BEGIN
     ON storage.objects FOR DELETE
     USING (
       bucket_id = 'categories'
-      AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+      AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
     );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;

@@ -23,7 +23,7 @@ CREATE POLICY "Admins can read all profiles"
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role = 'superadmin'
     )
   );
 
@@ -34,7 +34,7 @@ CREATE POLICY "Admins can update all profiles"
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role = 'superadmin'
     )
   );
 
@@ -55,7 +55,7 @@ CREATE POLICY "Admins can delete profiles"
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role = 'superadmin'
     )
   );
 

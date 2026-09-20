@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@lib/supabase/client';
 import { useAuth } from '@contexts/AuthContext';
 import { useCart } from '@hooks/useCart';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 export const ProductDetailsPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -15,6 +16,8 @@ export const ProductDetailsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [inWishlist, setInWishlist] = useState(false);
+
+  useDocumentTitle(product?.name_ar || product?.name_en);
 
   useEffect(() => {
     if (slug) fetchProduct();

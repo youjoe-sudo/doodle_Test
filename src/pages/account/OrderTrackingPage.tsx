@@ -3,6 +3,7 @@ import { supabase } from '@lib/supabase/client';
 import { useAuth } from '@contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { Package, Truck, CheckCircle, Clock, XCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 const fmtOrderNumber = (id: string) => `ORD-${id.slice(0, 8).toUpperCase()}`;
 
@@ -27,6 +28,7 @@ const PAYMENT_STATUS: Record<string, string> = {
 };
 
 export const OrderTrackingPage = () => {
+  useDocumentTitle('تتبع الطلب');
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [order, setOrder] = useState<any>(null);

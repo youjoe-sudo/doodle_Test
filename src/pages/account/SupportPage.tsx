@@ -2,6 +2,7 @@ import { supabase } from '@lib/supabase/client';
 import { useAuth } from '@contexts/AuthContext';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, ArrowRight, MessageCircle, Lock } from 'lucide-react';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 type Ticket = {
   id: string; subject: string; description: string; status: string;
@@ -21,6 +22,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export const SupportPage = () => {
+  useDocumentTitle('الدعم الفني');
   const { user } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);

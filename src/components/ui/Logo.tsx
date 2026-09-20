@@ -19,9 +19,9 @@ export const Logo = ({ size = 'md', className = '', showText = true, animate = f
     <div className={`flex items-center gap-2 ${className}`}>
       <div className={`relative ${animate ? 'animate-float' : ''}`}>
         <img
-          src="/logo.svg"
+          src="/logo.jpg"
           alt="Doodle Room Logo"
-          className={`${s.img} w-auto`}
+          className={`${s.img} w-auto object-contain rounded-md`}
           onError={(e) => {
             // Fallback: hide broken image, show styled text instead
             (e.target as HTMLImageElement).style.display = 'none';

@@ -17,7 +17,7 @@ CREATE POLICY "Users can update own profile"
   );
 
 -- ============================================================
--- SEC-2: Unify all admin policies to role = 'admin'
+-- SEC-2: Unify all admin policies to role = 'superadmin'
 -- Drop and recreate all admin ALL policies with consistent role check
 -- ============================================================
 
@@ -26,7 +26,7 @@ DROP POLICY IF EXISTS "Admins can manage site_settings" ON public.site_settings;
 CREATE POLICY "Admins can manage site_settings"
   ON public.site_settings FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- categories
@@ -34,7 +34,7 @@ DROP POLICY IF EXISTS "Admins can manage categories" ON public.categories;
 CREATE POLICY "Admins can manage categories"
   ON public.categories FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- products
@@ -42,7 +42,7 @@ DROP POLICY IF EXISTS "Admins can manage products" ON public.products;
 CREATE POLICY "Admins can manage products"
   ON public.products FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- product_images
@@ -50,7 +50,7 @@ DROP POLICY IF EXISTS "Admins can manage product images" ON public.product_image
 CREATE POLICY "Admins can manage product images"
   ON public.product_images FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- orders
@@ -58,7 +58,7 @@ DROP POLICY IF EXISTS "Admins can manage orders" ON public.orders;
 CREATE POLICY "Admins can manage orders"
   ON public.orders FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- order_items
@@ -66,7 +66,7 @@ DROP POLICY IF EXISTS "Admins can manage order items" ON public.order_items;
 CREATE POLICY "Admins can manage order items"
   ON public.order_items FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- payments
@@ -74,7 +74,7 @@ DROP POLICY IF EXISTS "Admins can manage payments" ON public.payments;
 CREATE POLICY "Admins can manage payments"
   ON public.payments FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- coupons
@@ -82,7 +82,7 @@ DROP POLICY IF EXISTS "Admins can manage coupons" ON public.coupons;
 CREATE POLICY "Admins can manage coupons"
   ON public.coupons FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- support_tickets
@@ -90,7 +90,7 @@ DROP POLICY IF EXISTS "Admins can manage tickets" ON public.support_tickets;
 CREATE POLICY "Admins can manage tickets"
   ON public.support_tickets FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- support_messages
@@ -98,7 +98,7 @@ DROP POLICY IF EXISTS "Admins can manage all messages" ON public.support_message
 CREATE POLICY "Admins can manage all messages"
   ON public.support_messages FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- notifications
@@ -106,7 +106,7 @@ DROP POLICY IF EXISTS "Admins can manage notifications" ON public.notifications;
 CREATE POLICY "Admins can manage notifications"
   ON public.notifications FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- ============================================================
@@ -126,21 +126,21 @@ CREATE POLICY "Products bucket: admin write"
   ON storage.objects FOR INSERT
   WITH CHECK (
     bucket_id = 'products'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 CREATE POLICY "Products bucket: admin update"
   ON storage.objects FOR UPDATE
   USING (
     bucket_id = 'products'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 CREATE POLICY "Products bucket: admin delete"
   ON storage.objects FOR DELETE
   USING (
     bucket_id = 'products'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 -- Categories bucket: admin-only write
@@ -148,21 +148,21 @@ CREATE POLICY "Categories bucket: admin write"
   ON storage.objects FOR INSERT
   WITH CHECK (
     bucket_id = 'categories'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 CREATE POLICY "Categories bucket: admin update"
   ON storage.objects FOR UPDATE
   USING (
     bucket_id = 'categories'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 CREATE POLICY "Categories bucket: admin delete"
   ON storage.objects FOR DELETE
   USING (
     bucket_id = 'categories'
-    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
   );
 
 -- ============================================================
@@ -177,7 +177,7 @@ DROP POLICY IF EXISTS "Admins can manage payment methods" ON public.payment_meth
 CREATE POLICY "Admins can manage payment methods"
   ON public.payment_methods FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- Public view excluding account_identifier

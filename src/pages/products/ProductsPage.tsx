@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ProductCard } from '@components/products/ProductCard';
 import { supabase } from '@lib/supabase/client';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 const PAGE_SIZE = 12;
 
@@ -22,6 +23,8 @@ export const ProductsPage = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
   const [params] = useSearchParams();
+
+  useDocumentTitle('المنتجات');
 
   const categoryFromUrl = params.get('category');
 

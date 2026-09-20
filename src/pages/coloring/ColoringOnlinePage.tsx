@@ -1,578 +1,208 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
-import { Download, RotateCcw, Eraser, Paintbrush, Trash2, Palette, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@contexts/AuthContext';
+import { supabase } from '@lib/supabase/client';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
+import { Lock, Unlock, Download, Palette, ExternalLink, Loader2, Eye, Paintbrush } from 'lucide-react';
 
-const PALETTE = [
-  '#E85D3A', '#F472B6', '#FBBF24', '#34D399', '#60A5FA', '#8B5CF6',
-  '#FB923C', '#F87171', '#A78BFA', '#2DD4BF', '#F43F5E', '#1E293B',
-  '#FFFFFF', '#94A3B8', '#D97706', '#059669', '#7C3AED', '#2563EB',
-];
-
-const BRUSH_SIZES = [2, 4, 8, 14, 22];
-
-interface Template {
-  id: string;
-  name: string;
-  nameAr: string;
-  draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void;
-}
-
-const templates: Template[] = [
-  {
-    id: 'flower',
-    name: 'Flower',
-    nameAr: 'زهرة',
-    draw: (ctx, w, h) => {
-      const cx = w / 2, cy = h / 2;
-      ctx.strokeStyle = '#1E293B';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      // Petals
-      for (let i = 0; i < 6; i++) {
-        const angle = (i * Math.PI * 2) / 6;
-        ctx.beginPath();
-        ctx.ellipse(cx + Math.cos(angle) * 60, cy + Math.sin(angle) * 60, 45, 28, angle, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-      // Center
-      ctx.beginPath();
-      ctx.arc(cx, cy, 25, 0, Math.PI * 2);
-      ctx.stroke();
-      // Stem
-      ctx.beginPath();
-      ctx.moveTo(cx, cy + 85);
-      ctx.quadraticCurveTo(cx + 15, cy + 140, cx - 5, cy + 200);
-      ctx.stroke();
-      // Leaves
-      ctx.beginPath();
-      ctx.ellipse(cx + 30, cy + 150, 25, 12, -0.5, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.ellipse(cx - 25, cy + 170, 22, 10, 0.6, 0, Math.PI * 2);
-      ctx.stroke();
-    },
-  },
-  {
-    id: 'butterfly',
-    name: 'Butterfly',
-    nameAr: 'فراشة',
-    draw: (ctx, w, h) => {
-      const cx = w / 2, cy = h / 2;
-      ctx.strokeStyle = '#1E293B';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      // Body
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, 6, 50, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      // Upper wings
-      ctx.beginPath();
-      ctx.ellipse(cx - 60, cy - 20, 55, 40, -0.3, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.ellipse(cx + 60, cy - 20, 55, 40, 0.3, 0, Math.PI * 2);
-      ctx.stroke();
-      // Lower wings
-      ctx.beginPath();
-      ctx.ellipse(cx - 40, cy + 35, 35, 28, -0.2, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.ellipse(cx + 40, cy + 35, 35, 28, 0.2, 0, Math.PI * 2);
-      ctx.stroke();
-      // Antennae
-      ctx.beginPath();
-      ctx.moveTo(cx - 3, cy - 48);
-      ctx.quadraticCurveTo(cx - 25, cy - 80, cx - 35, cy - 75);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(cx + 3, cy - 48);
-      ctx.quadraticCurveTo(cx + 25, cy - 80, cx + 35, cy - 75);
-      ctx.stroke();
-      // Wing dots
-      ctx.beginPath();
-      ctx.arc(cx - 55, cy - 20, 10, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx + 55, cy - 20, 10, 0, Math.PI * 2);
-      ctx.stroke();
-    },
-  },
-  {
-    id: 'star',
-    name: 'Star',
-    nameAr: 'نجمة',
-    draw: (ctx, w, h) => {
-      const cx = w / 2, cy = h / 2;
-      ctx.strokeStyle = '#1E293B';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      // Outer star
-      ctx.beginPath();
-      for (let i = 0; i < 5; i++) {
-        const outerAngle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-        const innerAngle = outerAngle + Math.PI / 5;
-        const outerR = 80, innerR = 35;
-        if (i === 0) ctx.moveTo(cx + outerR * Math.cos(outerAngle), cy + outerR * Math.sin(outerAngle));
-        else ctx.lineTo(cx + outerR * Math.cos(outerAngle), cy + outerR * Math.sin(outerAngle));
-        ctx.lineTo(cx + innerR * Math.cos(innerAngle), cy + innerR * Math.sin(innerAngle));
-      }
-      ctx.closePath();
-      ctx.stroke();
-      // Face
-      ctx.beginPath();
-      ctx.arc(cx - 15, cy - 8, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(cx + 15, cy - 8, 5, 0, Math.PI * 2);
-      ctx.fill();
-      // Smile
-      ctx.beginPath();
-      ctx.arc(cx, cy + 5, 18, 0.2, Math.PI - 0.2);
-      ctx.stroke();
-    },
-  },
-  {
-    id: 'cat',
-    name: 'Cat',
-    nameAr: 'قطة',
-    draw: (ctx, w, h) => {
-      const cx = w / 2, cy = h / 2;
-      ctx.strokeStyle = '#1E293B';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      // Head
-      ctx.beginPath();
-      ctx.arc(cx, cy, 55, 0, Math.PI * 2);
-      ctx.stroke();
-      // Ears
-      ctx.beginPath();
-      ctx.moveTo(cx - 40, cy - 40);
-      ctx.lineTo(cx - 55, cy - 85);
-      ctx.lineTo(cx - 15, cy - 55);
-      ctx.closePath();
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(cx + 40, cy - 40);
-      ctx.lineTo(cx + 55, cy - 85);
-      ctx.lineTo(cx + 15, cy - 55);
-      ctx.closePath();
-      ctx.stroke();
-      // Eyes
-      ctx.beginPath();
-      ctx.ellipse(cx - 18, cy - 8, 10, 13, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.ellipse(cx + 18, cy - 8, 10, 13, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      // Pupils
-      ctx.beginPath();
-      ctx.ellipse(cx - 18, cy - 6, 4, 8, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(cx + 18, cy - 6, 4, 8, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // Nose
-      ctx.beginPath();
-      ctx.moveTo(cx, cy + 8);
-      ctx.lineTo(cx - 6, cy + 16);
-      ctx.lineTo(cx + 6, cy + 16);
-      ctx.closePath();
-      ctx.stroke();
-      // Whiskers
-      for (const dir of [-1, 1]) {
-        ctx.beginPath();
-        ctx.moveTo(cx + dir * 20, cy + 12);
-        ctx.lineTo(cx + dir * 65, cy + 5);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(cx + dir * 20, cy + 18);
-        ctx.lineTo(cx + dir * 65, cy + 20);
-        ctx.stroke();
-      }
-      // Body
-      ctx.beginPath();
-      ctx.ellipse(cx, cy + 100, 40, 50, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    },
-  },
-  {
-    id: 'rainbow',
-    name: 'Rainbow',
-    nameAr: 'قوس قزح',
-    draw: (ctx, w, h) => {
-      const cx = w / 2, bottom = h * 0.7;
-      ctx.strokeStyle = '#1E293B';
-      ctx.lineWidth = 2;
-      // Arcs
-      for (let i = 0; i < 5; i++) {
-        const r = 140 - i * 25;
-        ctx.beginPath();
-        ctx.arc(cx, bottom, r, Math.PI, 0);
-        ctx.stroke();
-      }
-      // Clouds
-      for (const xOff of [-130, 130]) {
-        const bx = cx + xOff;
-        ctx.beginPath();
-        ctx.arc(bx, bottom + 5, 25, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(bx - 18, bottom + 12, 18, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(bx + 18, bottom + 12, 18, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-    },
-  },
-  {
-    id: 'house',
-    name: 'House',
-    nameAr: 'بيت',
-    draw: (ctx, w, h) => {
-      const cx = w / 2, cy = h / 2 + 20;
-      ctx.strokeStyle = '#1E293B';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      // Walls
-      ctx.strokeRect(cx - 70, cy - 30, 140, 100);
-      // Roof
-      ctx.beginPath();
-      ctx.moveTo(cx - 90, cy - 30);
-      ctx.lineTo(cx, cy - 100);
-      ctx.lineTo(cx + 90, cy - 30);
-      ctx.closePath();
-      ctx.stroke();
-      // Door
-      ctx.strokeRect(cx - 18, cy + 20, 36, 50);
-      ctx.beginPath();
-      ctx.arc(cx + 12, cy + 48, 3, 0, Math.PI * 2);
-      ctx.fill();
-      // Windows
-      ctx.strokeRect(cx - 55, cy - 15, 28, 28);
-      ctx.strokeRect(cx + 27, cy - 15, 28, 28);
-      // Window crosses
-      ctx.beginPath();
-      ctx.moveTo(cx - 41, cy - 15); ctx.lineTo(cx - 41, cy + 13);
-      ctx.moveTo(cx - 55, cy - 1); ctx.lineTo(cx - 27, cy - 1);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(cx + 41, cy - 15); ctx.lineTo(cx + 41, cy + 13);
-      ctx.moveTo(cx + 27, cy - 1); ctx.lineTo(cx + 55, cy - 1);
-      ctx.stroke();
-      // Chimney
-      ctx.strokeRect(cx + 40, cy - 90, 20, 35);
-    },
-  },
-];
+type ColoringPage = {
+  id: string; title: string; file_url: string; price: number;
+  is_free_tier: boolean; sort_order: number; created_at: string;
+};
 
 export const ColoringOnlinePage = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [color, setColor] = useState('#E85D3A');
-  const [brushSize, setBrushSize] = useState(4);
-  const [tool, setTool] = useState<'brush' | 'eraser'>('brush');
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [templateOpen, setTemplateOpen] = useState(true);
-  const [history, setHistory] = useState<ImageData[]>([]);
-  const lastPos = useRef<{ x: number; y: number } | null>(null);
-
-  const saveState = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    setHistory((prev) => [...prev.slice(-30), ctx.getImageData(0, 0, canvas.width, canvas.height)]);
-  }, []);
-
-  const getPos = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    if ('touches' in e) {
-      return {
-        x: (e.touches[0].clientX - rect.left) * scaleX,
-        y: (e.touches[0].clientY - rect.top) * scaleY,
-      };
-    }
-    return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY,
-    };
-  }, []);
-
-  const drawLine = useCallback((x0: number, y0: number, x1: number, y1: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.beginPath();
-    ctx.moveTo(x0, y0);
-    ctx.lineTo(x1, y1);
-    ctx.strokeStyle = tool === 'eraser' ? '#FFFFFF' : color;
-    ctx.lineWidth = tool === 'eraser' ? brushSize * 3 : brushSize;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
-  }, [color, brushSize, tool]);
-
-  const handlePointerDown = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    setIsDrawing(true);
-    saveState();
-    const pos = getPos(e);
-    lastPos.current = pos;
-    drawLine(pos.x, pos.y, pos.x, pos.y);
-  }, [getPos, drawLine, saveState]);
-
-  const handlePointerMove = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
-    e.preventDefault();
-    const pos = getPos(e);
-    if (lastPos.current) {
-      drawLine(lastPos.current.x, lastPos.current.y, pos.x, pos.y);
-    }
-    lastPos.current = pos;
-  }, [isDrawing, getPos, drawLine]);
-
-  const handlePointerUp = useCallback(() => {
-    setIsDrawing(false);
-    lastPos.current = null;
-  }, []);
-
-  const loadTemplate = useCallback((template: Template) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    saveState();
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    template.draw(ctx, canvas.width, canvas.height);
-    setTemplateOpen(false);
-  }, [saveState]);
-
-  const handleClear = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    saveState();
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }, [saveState]);
-
-  const handleUndo = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || history.length === 0) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const last = history[history.length - 1];
-    ctx.putImageData(last, 0, 0);
-    setHistory((prev) => prev.slice(0, -1));
-  }, [history]);
-
-  const handleDownload = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const link = document.createElement('a');
-    link.download = `doodle-room-${Date.now()}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  }, []);
+  useDocumentTitle('مكتبة التلوين');
+  const { user, profile } = useAuth();
+  const [pages, setPages] = useState<ColoringPage[]>([]);
+  const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [previewPage, setPreviewPage] = useState<ColoringPage | null>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }, []);
+    fetchData();
+  }, [user?.id]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [pagesRes, settingsRes] = await Promise.all([
+        supabase.from('coloring_pages').select('*').order('sort_order', { ascending: true }),
+        supabase.from('site_settings').select('value').eq('key', 'store').single(),
+      ]);
+
+      setPages(pagesRes.data || []);
+
+      // Get whatsapp number from settings
+      const storeVal = settingsRes.data?.value;
+      if (storeVal?.whatsapp_number) {
+        setWhatsappNumber(storeVal.whatsapp_number);
+      }
+
+      // Fetch unlocked pages for current user
+      if (user?.id) {
+        const { data: unlocked } = await supabase
+          .from('user_unlocked_pages')
+          .select('page_id')
+          .eq('user_id', user.id);
+        setUnlockedIds(new Set((unlocked || []).map((u) => u.page_id)));
+      }
+    } catch (err) {
+      console.error('Error fetching coloring data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const canAccess = (page: ColoringPage) => {
+    if (page.is_free_tier) return true;
+    if (unlockedIds.has(page.id)) return true;
+    return false;
+  };
+
+  const getWhatsAppLink = (page: ColoringPage) => {
+    const userIdentifier = user?.email || user?.user_metadata?.phone_number || 'مستخدم';
+    const message = `مرحباً، أود تفعيل رسمة التلوين (${page.title}) لحسابي: ${userIdentifier}`;
+    const encoded = encodeURIComponent(message);
+    const phone = whatsappNumber.replace(/[^0-9]/g, '');
+    return `https://wa.me/${phone}?text=${encoded}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-white border-2 border-line rounded-2xl overflow-hidden animate-pulse">
+              <div className="aspect-square bg-cream" />
+              <div className="p-4 space-y-3">
+                <div className="h-4 bg-cream rounded-full w-3/4" />
+                <div className="h-3 bg-cream rounded-full w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-6 py-12">
       {/* Header */}
-      <div className="mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-terracotta/10 rounded-full mb-3">
-          <Sparkles className="w-3.5 h-3.5 text-terracotta" />
-          <span className="text-xs font-body text-terracotta font-medium">مجاني - بدون تسجيل</span>
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center gap-2 bg-terracotta/10 text-terracotta px-4 py-2 rounded-full text-sm font-bold mb-4">
+          <Palette className="w-4 h-4" />
+          مكتبة التلوين الرقمية
         </div>
-        <h1 className="text-3xl md:text-4xl font-display font-bold text-ink mb-2">
-          Online <span className="text-terracotta">Coloring</span> & Doodles
+        <h1 className="text-4xl md:text-5xl font-bold text-ink mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
+          اكتشف عالم التلوين
         </h1>
-        <p className="text-muted font-body">ارسم بألوانك الخاصة، اختر قالبًا، وابدأ التلوين الآن!</p>
+        <p className="text-muted text-lg max-w-2xl mx-auto">
+          صفحات تلوين رقمية متنوعة. بعضها مجاني وبعضها متاح بسعر رمزي. اختر رسمتك وابدأ الإبداع!
+        </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar Tools */}
-        <div className="lg:w-64 shrink-0 space-y-4">
-          {/* Tools */}
-          <div className="bg-white border-2 border-line rounded-2xl p-4 shadow-[4px_4px_0px_0px_#E2E8F0]">
-            <h3 className="font-bold text-ink text-sm mb-3">الأدوات</h3>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setTool('brush')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
-                  tool === 'brush'
-                    ? 'border-terracotta bg-terracotta text-white'
-                    : 'border-line text-ink hover:border-terracotta/50'
-                }`}
-              >
-                <Paintbrush className="w-4 h-4" /> فرشاة
-              </button>
-              <button
-                onClick={() => setTool('eraser')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
-                  tool === 'eraser'
-                    ? 'border-terracotta bg-terracotta text-white'
-                    : 'border-line text-ink hover:border-terracotta/50'
-                }`}
-              >
-                <Eraser className="w-4 h-4" /> ممحاة
-              </button>
-            </div>
-          </div>
-
-          {/* Brush Size */}
-          <div className="bg-white border-2 border-line rounded-2xl p-4 shadow-[4px_4px_0px_0px_#E2E8F0]">
-            <h3 className="font-bold text-ink text-sm mb-3">حجم الفرشاة</h3>
-            <div className="flex items-center gap-2">
-              {BRUSH_SIZES.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setBrushSize(size)}
-                  className={`flex-1 flex items-center justify-center py-2 rounded-lg border-2 transition-all ${
-                    brushSize === size
-                      ? 'border-terracotta bg-terracotta/10'
-                      : 'border-line hover:border-terracotta/50'
-                  }`}
-                  title={`${size}px`}
-                >
-                  <div
-                    className="rounded-full bg-ink"
-                    style={{ width: Math.min(size + 2, 20), height: Math.min(size + 2, 20) }}
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Color Palette */}
-          <div className="bg-white border-2 border-line rounded-2xl p-4 shadow-[4px_4px_0px_0px_#E2E8F0]">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-ink text-sm flex items-center gap-2">
-                <Palette className="w-4 h-4 text-terracotta" /> الألوان
-              </h3>
-              <div
-                className="w-8 h-8 rounded-lg border-2 border-line shadow-sm"
-                style={{ backgroundColor: color }}
-              />
-            </div>
-            <div className="grid grid-cols-6 gap-1.5">
-              {PALETTE.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => { setColor(c); setTool('brush'); }}
-                  className={`w-full aspect-square rounded-lg border-2 transition-all hover:scale-110 ${
-                    color === c && tool === 'brush' ? 'border-ink scale-110 shadow-sm' : 'border-line/50'
-                  }`}
-                  style={{ backgroundColor: c }}
-                  title={c}
-                />
-              ))}
-            </div>
-            <input
-              type="color"
-              value={color}
-              onChange={(e) => { setColor(e.target.value); setTool('brush'); }}
-              className="w-full mt-3 h-8 rounded-lg border-2 border-line cursor-pointer"
-            />
-          </div>
-
-          {/* Actions */}
-          <div className="bg-white border-2 border-line rounded-2xl p-4 shadow-[4px_4px_0px_0px_#E2E8F0]">
-            <h3 className="font-bold text-ink text-sm mb-3">التحكم</h3>
-            <div className="space-y-2">
-              <button onClick={handleUndo} disabled={history.length === 0}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-line text-sm font-bold text-ink hover:border-terracotta/50 transition-all disabled:opacity-40">
-                <RotateCcw className="w-4 h-4" /> تراجع
-              </button>
-              <button onClick={handleClear}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-line text-sm font-bold text-ink hover:border-red-300 hover:text-red-500 transition-all">
-                <Trash2 className="w-4 h-4" /> مسح الكل
-              </button>
-              <button onClick={handleDownload}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-terracotta text-white border-2 border-ink shadow-[3px_3px_0px_0px_#1E293B] hover:shadow-[5px_5px_0px_0px_#1E293B] text-sm font-bold transition-all">
-                <Download className="w-4 h-4" /> حفظ الصورة
-              </button>
-            </div>
-          </div>
+      {/* Gallery */}
+      {pages.length === 0 ? (
+        <div className="text-center py-20 bg-white border-2 border-line rounded-2xl">
+          <Palette className="w-16 h-16 text-terracotta/30 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-ink mb-2">قريباً</h3>
+          <p className="text-muted">سنضيف صفحات تلوين مميزة قريباً. تابعونا!</p>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {pages.map((page) => {
+            const hasAccess = canAccess(page);
+            return (
+              <div key={page.id}
+                className={`group bg-white border-2 border-line rounded-2xl overflow-hidden transition-all hover:shadow-[6px_6px_0px_0px_#E2E8F0] hover:-translate-y-1 ${!hasAccess ? 'relative' : ''}`}>
+                {/* Image */}
+                <div className="relative aspect-square bg-cream">
+                  <img src={page.file_url} alt={page.title}
+                    className={`w-full h-full object-cover ${!hasAccess ? 'blur-sm' : ''}`} />
 
-        {/* Canvas Area */}
-        <div className="flex-1">
-          {/* Template Picker */}
-          <div className="bg-white border-2 border-line rounded-2xl mb-4 shadow-[4px_4px_0px_0px_#E2E8F0] overflow-hidden">
-            <button
-              onClick={() => setTemplateOpen(!templateOpen)}
-              className="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-ink"
-            >
-              <span>اختر قالب تلوين</span>
-              {templateOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            {templateOpen && (
-              <div className="px-4 pb-4 grid grid-cols-3 sm:grid-cols-6 gap-2">
-                {templates.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => loadTemplate(t)}
-                    className="p-3 rounded-xl border-2 border-line hover:border-terracotta hover:bg-terracotta/5 transition-all text-center group"
-                  >
-                    <div className="w-12 h-12 mx-auto mb-1.5 bg-cream rounded-lg flex items-center justify-center group-hover:bg-terracotta/10 transition-colors">
-                      <span className="text-lg">{t.id === 'flower' ? '🌸' : t.id === 'butterfly' ? '🦋' : t.id === 'star' ? '⭐' : t.id === 'cat' ? '🐱' : t.id === 'rainbow' ? '🌈' : '🏠'}</span>
+                  {/* Lock overlay */}
+                  {!hasAccess && (
+                    <div className="absolute inset-0 bg-ink/40 flex flex-col items-center justify-center">
+                      <div className="bg-white border-2 border-line rounded-2xl p-6 text-center shadow-[4px_4px_0px_0px_#1E293B]">
+                        <Lock className="w-10 h-10 text-terracotta mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-ink" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                          {page.price} ج.م
+                        </p>
+                        <p className="text-xs text-muted mt-1">للفتح</p>
+                      </div>
                     </div>
-                    <span className="text-xs font-bold text-ink">{t.nameAr}</span>
-                  </button>
-                ))}
-                <button
-                  onClick={handleClear}
-                  className="p-3 rounded-xl border-2 border-dashed border-line hover:border-terracotta hover:bg-terracotta/5 transition-all text-center"
-                >
-                  <div className="w-12 h-12 mx-auto mb-1.5 bg-cream rounded-lg flex items-center justify-center">
-                    <span className="text-lg">📄</span>
+                  )}
+
+                  {/* Free badge */}
+                  {page.is_free_tier && (
+                    <div className="absolute top-3 right-3 bg-sage text-white text-[10px] font-bold uppercase px-2.5 py-1 rounded-full shadow">
+                      مجاني
+                    </div>
+                  )}
+
+                  {/* Unlocked badge */}
+                  {hasAccess && !page.is_free_tier && (
+                    <div className="absolute top-3 right-3 bg-terracotta text-white text-[10px] font-bold uppercase px-2.5 py-1 rounded-full shadow flex items-center gap-1">
+                      <Unlock className="w-3 h-3" /> مفتوح
+                    </div>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="p-4">
+                  <h3 className="font-bold text-ink mb-3">{page.title}</h3>
+                  <div className="flex gap-2">
+                    {hasAccess ? (
+                      <>
+                        <Link to={`/coloring/${page.id}`}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-terracotta text-white font-bold rounded-xl text-sm border-2 border-ink shadow-[2px_2px_0px_0px_#1E293B] hover:shadow-[3px_3px_0px_0px_#1E293B] transition-all">
+                          <Paintbrush className="w-4 h-4" /> تلوين
+                        </Link>
+                        <button onClick={() => setPreviewPage(page)}
+                          className="px-3 py-2.5 bg-cream text-ink font-bold rounded-xl text-sm border border-line hover:border-terracotta transition-colors">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <a href={page.file_url} download={page.title}
+                          className="px-3 py-2.5 bg-cream text-ink font-bold rounded-xl text-sm border border-line hover:border-terracotta transition-colors">
+                          <Download className="w-4 h-4" />
+                        </a>
+                      </>
+                    ) : (
+                      <a href={getWhatsAppLink(page)} target="_blank" rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-[#25D366] text-white font-bold rounded-xl text-sm shadow-[2px_2px_0px_0px_#1E293B] hover:shadow-[3px_3px_0px_0px_#1E293B] transition-all">
+                        <ExternalLink className="w-4 h-4" /> طلب فتح عبر واتساب
+                      </a>
+                    )}
                   </div>
-                  <span className="text-xs font-bold text-ink">فارغ</span>
-                </button>
+                </div>
               </div>
-            )}
-          </div>
-
-          {/* Canvas */}
-          <div className="bg-white border-2 border-line rounded-2xl p-4 shadow-[4px_4px_0px_0px_#E2E8F0]">
-            <canvas
-              ref={canvasRef}
-              width={800}
-              height={600}
-              className="w-full rounded-xl cursor-crosshair border border-line touch-none"
-              style={{ maxWidth: '100%', aspectRatio: '4/3' }}
-              onMouseDown={handlePointerDown}
-              onMouseMove={handlePointerMove}
-              onMouseUp={handlePointerUp}
-              onMouseLeave={handlePointerUp}
-              onTouchStart={handlePointerDown}
-              onTouchMove={handlePointerMove}
-              onTouchEnd={handlePointerUp}
-            />
-          </div>
-
-          <p className="text-center text-xs text-muted mt-3">
-            استخدم الفرشاة للرسم والممحاة للمسح • اضغط "حفظ الصورة" لتنزيل عملك كصورة PNG
-          </p>
+            );
+          })}
         </div>
-      </div>
+      )}
+
+      {/* Preview Modal */}
+      {previewPage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-ink/80" onClick={() => setPreviewPage(null)} />
+          <div className="relative bg-white border-2 border-line rounded-2xl shadow-[8px_8px_0px_0px_#E2E8F0] max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b-2 border-line">
+              <h3 className="font-bold text-ink">{previewPage.title}</h3>
+              <button onClick={() => setPreviewPage(null)} className="p-2 rounded-lg hover:bg-cream text-lg">✕</button>
+            </div>
+            <div className="flex-1 overflow-auto p-4 bg-cream">
+              <img src={previewPage.file_url} alt={previewPage.title} className="w-full h-auto rounded-xl" />
+            </div>
+            <div className="p-4 border-t-2 border-line flex gap-2">
+              <a href={previewPage.file_url} download={previewPage.title}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-terracotta text-white font-bold rounded-xl text-sm border-2 border-ink shadow-[2px_2px_0px_0px_#1E293B] transition-all">
+                <Download className="w-4 h-4" /> تحميل
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

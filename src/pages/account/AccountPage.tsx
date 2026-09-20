@@ -1,13 +1,15 @@
 import { supabase, getSignedUrl } from '@lib/supabase/client';
 import { useAuth } from '@contexts/AuthContext';
 import { useState, useEffect, useRef } from 'react';
-import { User, MapPin, Lock, Shield, Camera, Loader2, Plus, Trash2, Star, Save, X, CheckCircle } from 'lucide-react';
+import { User, MapPin, Lock, Shield, Camera, Loader2, Plus, Trash2, Star, Save, X, CheckCircle, Palette } from 'lucide-react';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 const TABS = [
   { id: 'profile', label: 'الملف الشخصي', icon: User },
   { id: 'addresses', label: 'العناوين', icon: MapPin },
   { id: 'password', label: 'كلمة المرور', icon: Lock },
   { id: 'sessions', label: 'الجلسات', icon: Shield },
+  { id: 'artworks', label: 'رسوماتي', icon: Palette },
 ];
 
 const EGYPT_GOVERNORATES = [
@@ -19,6 +21,7 @@ const EGYPT_GOVERNORATES = [
 ];
 
 export const AccountPage = () => {
+  useDocumentTitle('حسابي');
   const { user } = useAuth();
   const [tab, setTab] = useState('profile');
   const [profile, setProfile] = useState<any>(null);
@@ -148,6 +151,51 @@ export const AccountPage = () => {
   useEffect(() => {
     if (tab === 'sessions') loadSessions();
   }, [tab]);
+
+  // ─── Artworks Tab ───
+  const [artworks, setArtworks] = useState<any[]>([]);
+  const [artworksLoading, setArtworksLoading] = useState(false);
+
+  useEffect(() => {
+    if (tab === 'artworks') loadArtworks();
+  }, [tab]);
+
+  const loadArtworks = async () => {
+    setArtworksLoading(true);
+    try {
+      const { data } = await supabase
+        .from('user_artworks')
+        .select('*, page:coloring_pages(title, file_url)')
+        .eq('user_id', user?.id)
+        .order('updated_at', { ascending: false });
+      setArtworks(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setArtworksLoading(false);
+    }
+  };
+
+  const deleteArtwork = async (artworkId: string, previewUrl: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذه الرسمة؟')) return;
+    try {
+      if (previewUrl) {
+        const path = previewUrl.split('/user_artworks/')[1];
+        if (path) await supabase.storage.from('user_artworks').remove([path]);
+      }
+      await supabase.from('user_artworks').delete().eq('id', artworkId);
+      setArtworks((prev) => prev.filter((a) => a.id !== artworkId));
+      showToast('تم الحذف بنجاح');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const getArtworkImage = (art: any): string => {
+    if (art.preview_url) return art.preview_url;
+    if (art.page?.file_url) return art.page.file_url;
+    return '/logo.jpg';
+  };
 
   const loadSessions = async () => {
     setSessionsLoading(true);
@@ -364,6 +412,54 @@ export const AccountPage = () => {
                     </div>
                   </div>
                   {s.current && <span className="px-3 py-1 bg-sage/10 text-sage text-xs font-bold rounded-full">الجلسة الحالية</span>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── My Artworks ── */}
+      {tab === 'artworks' && (
+        <div className="bg-white border-2 border-line rounded-2xl p-6 shadow-[4px_4px_0px_0px_#E2E8F0]">
+          <h3 className="font-bold text-ink mb-4">رسوماتي المحفوظة</h3>
+          {artworksLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => <div key={i} className="aspect-square bg-cream rounded-2xl animate-pulse" />)}
+            </div>
+          ) : artworks.length === 0 ? (
+            <div className="text-center py-12">
+              <Palette className="w-12 h-12 text-muted/30 mx-auto mb-3" />
+              <p className="text-muted">لم تحفظ أي رسومات بعد.</p>
+              <a href="/coloring-online" className="text-terracotta text-sm font-bold mt-2 inline-block hover:underline">ابدأ التلوين الآن</a>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {artworks.map((art) => (
+                <div key={art.id} className="bg-cream border-2 border-line rounded-2xl overflow-hidden group">
+                  <div className="aspect-square relative">
+                    <img src={getArtworkImage(art)} alt={art.page?.title || 'رسمة'}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/logo.jpg'; }} />
+                    <div className="absolute inset-0 bg-ink/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <a href={`/coloring/${art.page_id}`}
+                        className="px-3 py-2 bg-terracotta text-white text-xs font-bold rounded-xl shadow hover:shadow-lg transition-all">
+                        متابعة التلوين
+                      </a>
+                      <a href={getArtworkImage(art)} download
+                        className="px-3 py-2 bg-white text-ink text-xs font-bold rounded-xl shadow hover:shadow-lg transition-all">
+                        تحميل
+                      </a>
+                      <button onClick={() => deleteArtwork(art.id, art.preview_url)}
+                        className="px-3 py-2 bg-red-500 text-white text-xs font-bold rounded-xl shadow hover:shadow-lg transition-all">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-sm font-medium text-ink truncate">{art.page?.title || 'رسمة'}</p>
+                    <p className="text-xs text-muted">{new Date(art.updated_at).toLocaleDateString('ar-EG')}</p>
+                  </div>
                 </div>
               ))}
             </div>

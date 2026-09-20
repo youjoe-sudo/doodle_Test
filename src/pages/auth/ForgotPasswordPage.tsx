@@ -1,7 +1,9 @@
 import { useAuth } from '@contexts/AuthContext';
 import { useState } from 'react';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 export const ForgotPasswordPage = () => {
+  useDocumentTitle('نسيت كلمة المرور');
   const { resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);

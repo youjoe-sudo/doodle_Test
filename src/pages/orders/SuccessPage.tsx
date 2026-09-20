@@ -1,4 +1,5 @@
 import { useLocation, Link } from 'react-router-dom';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 interface OrderState {
   orderId: string;
@@ -11,6 +12,7 @@ interface OrderState {
 const fmtOrderNumber = (id: string) => `ORD-${id.slice(0, 8).toUpperCase()}`;
 
 export const OrderSuccessPage = () => {
+  useDocumentTitle('تم الطلب بنجاح');
   const location = useLocation();
   const order = (location.state as OrderState) || null;
 

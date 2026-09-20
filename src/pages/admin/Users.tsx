@@ -232,12 +232,12 @@ export const AdminUsers = () => {
       key: 'role', label: 'الدور',
       render: (u: UserProfile) => (
         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
-          u.role === 'admin' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+          u.role === 'superadmin' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
           u.role === 'moderator' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
           'bg-cream text-ink border border-line'
         }`}>
-          {u.role === 'admin' ? <Shield className="w-3 h-3" /> : null}
-          {u.role === 'admin' ? 'مدير' : u.role === 'moderator' ? 'مشرف' : 'عميل'}
+          {u.role === 'superadmin' ? <Shield className="w-3 h-3" /> : null}
+          {u.role === 'superadmin' ? 'مدير' : u.role === 'moderator' ? 'مشرف' : 'عميل'}
         </span>
       )
     },

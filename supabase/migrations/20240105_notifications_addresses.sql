@@ -33,7 +33,7 @@ CREATE POLICY "Users can update own notifications"
 CREATE POLICY "Admins can manage notifications"
   ON public.notifications FOR ALL
   USING (auth.role() = 'service_role' OR EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin'
   ));
 
 -- ============================================================

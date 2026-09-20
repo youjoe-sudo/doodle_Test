@@ -3,6 +3,7 @@ import { supabase } from '@lib/supabase/client';
 import { useAuth } from '@contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { Package } from 'lucide-react';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 const fmtOrderNumber = (id: string) => `ORD-${id.slice(0, 8).toUpperCase()}`;
 
@@ -17,6 +18,7 @@ const PAYMENT_STATUS_LABELS: Record<string, string> = {
 };
 
 export const OrdersPage = () => {
+  useDocumentTitle('طلباتي');
   const { user } = useAuth();
   const [orders, setOrders] = useState<Array<any>>([]);
   const [loading, setLoading] = useState(true);

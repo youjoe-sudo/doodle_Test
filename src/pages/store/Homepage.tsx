@@ -5,8 +5,10 @@ import { BestsellersSection } from '../../components/home/BestsellersSection';
 import { ColoringTeaser } from '../../components/home/ColoringTeaser';
 import { WhyChooseUs } from '../../components/home/WhyChooseUs';
 import { NewsletterSection } from '../../components/home/NewsletterSection';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 export const Homepage = () => {
+  useDocumentTitle();
   return (
     <div>
       <AnnouncementBar />

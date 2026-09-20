@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useDocumentTitle } from '@hooks/useDocumentTitle';
 
 export const ContactPage = () => {
+  useDocumentTitle('اتصل بنا');
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
 
   return (

@@ -85,9 +85,9 @@ export const HeroSection = () => {
               {/* Main logo container */}
               <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 animate-float">
                 <img
-                  src="/logo.svg"
+                  src="/logo.jpg"
                   alt="Doodle Room Logo"
-                  className="w-full h-full drop-shadow-lg"
+                  className="w-full h-full object-contain rounded-xl drop-shadow-lg"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                     const fb = (e.target as HTMLImageElement).nextElementSibling;

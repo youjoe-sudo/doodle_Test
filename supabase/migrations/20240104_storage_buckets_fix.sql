@@ -31,7 +31,7 @@ DO $$ BEGIN
       ON storage.objects FOR INSERT
       WITH CHECK (
         bucket_id = 'products'
-        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
       );
   END IF;
 END $$;
@@ -42,7 +42,7 @@ DO $$ BEGIN
       ON storage.objects FOR UPDATE
       USING (
         bucket_id = 'products'
-        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
       );
   END IF;
 END $$;
@@ -53,7 +53,7 @@ DO $$ BEGIN
       ON storage.objects FOR DELETE
       USING (
         bucket_id = 'products'
-        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
       );
   END IF;
 END $$;
@@ -74,7 +74,7 @@ DO $$ BEGIN
       ON storage.objects FOR INSERT
       WITH CHECK (
         bucket_id = 'categories'
-        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
       );
   END IF;
 END $$;
@@ -85,7 +85,7 @@ DO $$ BEGIN
       ON storage.objects FOR UPDATE
       USING (
         bucket_id = 'categories'
-        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
       );
   END IF;
 END $$;
@@ -96,7 +96,7 @@ DO $$ BEGIN
       ON storage.objects FOR DELETE
       USING (
         bucket_id = 'categories'
-        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+        AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'superadmin')
       );
   END IF;
 END $$;
@@ -109,7 +109,7 @@ DO $$ BEGIN
       WITH CHECK (
         bucket_id = 'receipts'
         AND auth.role() = 'authenticated'
-        AND (storage.foldername())[1] = auth.uid()::text
+        AND SPLIT_PART(name, '/', 1) = auth.uid()::text
       );
   END IF;
 END $$;
@@ -121,7 +121,7 @@ DO $$ BEGIN
       ON storage.objects FOR SELECT
       USING (
         bucket_id = 'receipts'
-        AND (storage.foldername())[1] = auth.uid()::text
+        AND SPLIT_PART(name, '/', 1) = auth.uid()::text
       );
   END IF;
 END $$;
@@ -155,7 +155,7 @@ DO $$ BEGIN
       WITH CHECK (
         bucket_id = 'avatars'
         AND auth.role() = 'authenticated'
-        AND (storage.foldername())[1] = auth.uid()::text
+        AND SPLIT_PART(name, '/', 1) = auth.uid()::text
       );
   END IF;
 END $$;
@@ -167,7 +167,7 @@ DO $$ BEGIN
       USING (
         bucket_id = 'avatars'
         AND auth.role() = 'authenticated'
-        AND (storage.foldername())[1] = auth.uid()::text
+        AND SPLIT_PART(name, '/', 1) = auth.uid()::text
       );
   END IF;
 END $$;
@@ -179,7 +179,7 @@ DO $$ BEGIN
       USING (
         bucket_id = 'avatars'
         AND auth.role() = 'authenticated'
-        AND (storage.foldername())[1] = auth.uid()::text
+        AND SPLIT_PART(name, '/', 1) = auth.uid()::text
       );
   END IF;
 END $$;

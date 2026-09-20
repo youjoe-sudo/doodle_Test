@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Allow: /shop
+Allow: /categories
+Allow: /about
+Allow: /contact
+Allow: /coloring-online
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /cart/
+Disallow: /banned/
+Disallow: /account/
+Disallow: /api/
+
+Sitemap: https://doodleroom.com/sitemap.xml

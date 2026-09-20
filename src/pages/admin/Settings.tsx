@@ -16,7 +16,7 @@ type StoreSettings = {
   brand_name: string; tagline: string; description: string; logo_url: string;
   primary_color: string; hero_title: string; hero_subtitle: string; hero_image_url: string;
   contact_email: string; contact_phone: string; contact_address: string;
-  vodafone_cash_number: string; instapay_id: string;
+  vodafone_cash_number: string; instapay_id: string; whatsapp_number: string;
   working_hours: string; facebook_url: string; instagram_url: string; tiktok_url: string;
   shipping_fees: Record<string, number>;
 };
@@ -24,10 +24,10 @@ type StoreSettings = {
 const defaultSettings: StoreSettings = {
   brand_name: 'Doodle Room', tagline: 'Small Books Big Dreams',
   description: 'A cozy little corner for books, gifts & lovely little things',
-  logo_url: '/logo.svg', primary_color: '#bd745d',
+  logo_url: '/logo.jpg', primary_color: '#bd745d',
   hero_title: 'Small Books Big Dreams', hero_subtitle: 'A cozy little corner for books, gifts & lovely little things',
   hero_image_url: '', contact_email: '', contact_phone: '', contact_address: '',
-  vodafone_cash_number: '', instapay_id: '',
+  vodafone_cash_number: '', instapay_id: '', whatsapp_number: '',
   working_hours: '', facebook_url: '', instagram_url: '', tiktok_url: '',
   shipping_fees: {
     'القاهرة': 50, 'الجيزة': 50, 'الإسكندرية': 60, 'الدقهلية': 60,
@@ -130,7 +130,7 @@ export const AdminSettings = () => {
           <Field label="اسم المتجر" k="brand_name" dir="rtl" placeholder="Doodle Room" />
           <Field label="الشعار" k="tagline" dir="rtl" placeholder="Small Books Big Dreams" />
           <div><label className="block text-xs font-bold text-ink uppercase tracking-wide mb-1.5">الوصف</label><textarea value={settings.description} onChange={(e) => update('description', e.target.value)} rows={2} className="w-full border-2 border-line rounded-xl px-4 py-2.5 text-sm focus:border-terracotta focus:outline-none resize-none" dir="rtl" /></div>
-          <Field label="رابط الشعار" k="logo_url" placeholder="/logo.svg" />
+          <Field label="رابط الشعار" k="logo_url" placeholder="/logo.jpg" />
           <Field label="اللون الأساسي" k="primary_color" placeholder="#bd745d" />
         </Section>
 
@@ -152,6 +152,11 @@ export const AdminSettings = () => {
         <Section title="طرق الدفع">
           <Field label="رقم فودافون كاش" k="vodafone_cash_number" placeholder="01xxxxxxxxx" />
           <Field label="معرف InstaPay" k="instapay_id" placeholder="instapay-id" />
+        </Section>
+
+        <Section title="رقم الواتساب (طلبات التلوين)">
+          <Field label="رقم الواتساب" k="whatsapp_number" placeholder="201xxxxxxxxx" dir="ltr" />
+          <p className="text-xs text-muted">سيتم استخدام هذا الرقم في روابط الواتساب لطلبات فتح صفحات التلوين.</p>
         </Section>
 
         <Section title="رسوم الشحن حسب المحافظة">

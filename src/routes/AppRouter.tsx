@@ -27,6 +27,7 @@ const AdminPayments = lazy(() => import('../pages/admin/Payments').then(m => ({ 
 const AdminSettings = lazy(() => import('../pages/admin/Settings').then(m => ({ default: m.AdminSettings })));
 const AdminCoupons = lazy(() => import('../pages/admin/Coupons').then(m => ({ default: m.AdminCoupons })));
 const AdminNotifications = lazy(() => import('../pages/admin/Notifications').then(m => ({ default: m.AdminNotifications })));
+const AdminColoring = lazy(() => import('../pages/admin/Coloring').then(m => ({ default: m.AdminColoring })));
 const RegisterPage = lazy(() => import('../pages/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import('../pages/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
@@ -39,6 +40,7 @@ const SupportPage = lazy(() => import('../pages/account/SupportPage').then(m => 
 const CheckoutPage = lazy(() => import('../pages/checkout/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
 const OrderSuccessPage = lazy(() => import('../pages/orders/SuccessPage').then(m => ({ default: m.OrderSuccessPage })));
 const ColoringOnlinePage = lazy(() => import('../pages/coloring/ColoringOnlinePage').then(m => ({ default: m.ColoringOnlinePage })));
+const ColoringCanvasPage = lazy(() => import('../pages/coloring/ColoringCanvasPage').then(m => ({ default: m.ColoringCanvasPage })));
 const AboutPage = lazy(() => import('../pages/about/AboutPage').then(m => ({ default: m.AboutPage })));
 const ContactPage = lazy(() => import('../pages/contact/ContactPage').then(m => ({ default: m.ContactPage })));
 const SearchPage = lazy(() => import('../pages/search/SearchPage').then(m => ({ default: m.SearchPage })));
@@ -69,6 +71,7 @@ export const router = createBrowserRouter([
         { path: 'about', element: <Suspense fallback={<AdminLoading />}><AboutPage /></Suspense> },
         { path: 'contact', element: <Suspense fallback={<AdminLoading />}><ContactPage /></Suspense> },
         { path: 'coloring-online', element: <Suspense fallback={<AdminLoading />}><ColoringOnlinePage /></Suspense> },
+        { path: 'coloring/:id', element: <ProtectedRoute><Suspense fallback={<AdminLoading />}><ColoringCanvasPage /></Suspense></ProtectedRoute> },
         { path: 'cart', element: <ProtectedRoute><CartPage /></ProtectedRoute> },
         { path: 'checkout', element: <ProtectedRoute><Suspense fallback={<AdminLoading />}><CheckoutPage /></Suspense></ProtectedRoute> },
         { path: 'orders/success', element: <Suspense fallback={<AdminLoading />}><OrderSuccessPage /></Suspense> },
@@ -101,6 +104,7 @@ export const router = createBrowserRouter([
         { path: 'shipping', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminShipping /></Suspense></AdminRoute> },
         { path: 'payments', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminPayments /></Suspense></AdminRoute> },
         { path: 'notifications', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminNotifications /></Suspense></AdminRoute> },
+        { path: 'coloring', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminColoring /></Suspense></AdminRoute> },
         { path: 'settings', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminSettings /></Suspense></AdminRoute> },
       ],
     },
