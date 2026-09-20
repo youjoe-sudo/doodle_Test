@@ -27,7 +27,7 @@ export const Input = ({
         disabled={disabled || undefined}
         className={cn(
           "w-full px-3 py-2 border border-line rounded-md bg-cream text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-terracotta transition-colors",
-          disabled && "disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled ? "disabled:opacity-50 disabled:cursor-not-allowed" : undefined
         )}
         {...props}
       />
