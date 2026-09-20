@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --cream: #f8f2ec;
+    --paper: #fffaf5;
+    --terracotta: #bd745d;
+    --terracotta-dark: #914b3a;
+    --sage: #b7b69a;
+    --sage-dark: #77765d;
+    --blush: #edc7c0;
+    --ink: #3d3430;
+    --muted: #84766f;
+    --line: #eaded5;
+    --white: #fffdf9;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--cream);
+    color: var(--ink);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+
+  arabic-text {
+    font-family: 'IBM Plex Sans Arabic', serif;
+    direction: rtl;
+  }
+
+  .font-display {
+    font-family: 'Playfair Display', serif;
+  }
+
+  .font-body {
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .font-arabic-headline {
+    font-family: 'Alexandria', serif;
+  }
+
+  .font-arabic-body {
+    font-family: 'IBM Plex Sans Arabic', serif;
+  }
+
+  .font-arabic-decorative {
+    font-family: 'Aref Ruqaa Ink', cursive;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--cream);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+  }
+}
