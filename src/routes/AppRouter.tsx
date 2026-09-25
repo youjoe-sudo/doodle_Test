@@ -28,6 +28,8 @@ const AdminSettings = lazy(() => import('../pages/admin/Settings').then(m => ({ 
 const AdminCoupons = lazy(() => import('../pages/admin/Coupons').then(m => ({ default: m.AdminCoupons })));
 const AdminNotifications = lazy(() => import('../pages/admin/Notifications').then(m => ({ default: m.AdminNotifications })));
 const AdminColoring = lazy(() => import('../pages/admin/Coloring').then(m => ({ default: m.AdminColoring })));
+const AdminHeroBanners = lazy(() => import('../pages/admin/HeroBanners').then(m => ({ default: m.AdminHeroBanners })));
+const AdminAboutBuilder = lazy(() => import('../pages/admin/AboutBuilder').then(m => ({ default: m.AdminAboutBuilder })));
 const RegisterPage = lazy(() => import('../pages/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import('../pages/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
@@ -105,6 +107,8 @@ export const router = createBrowserRouter([
         { path: 'payments', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminPayments /></Suspense></AdminRoute> },
         { path: 'notifications', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminNotifications /></Suspense></AdminRoute> },
         { path: 'coloring', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminColoring /></Suspense></AdminRoute> },
+        { path: 'hero-banners', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminHeroBanners /></Suspense></AdminRoute> },
+        { path: 'about-builder', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminAboutBuilder /></Suspense></AdminRoute> },
         { path: 'settings', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminSettings /></Suspense></AdminRoute> },
       ],
     },

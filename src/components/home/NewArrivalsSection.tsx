@@ -1,93 +1,149 @@
-import { Heart, ShoppingCart } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Heart, ShoppingCart, Flower2, ChevronRight } from 'lucide-react';
+import { supabase } from '@lib/supabase/client';
+import { useCart } from '@hooks/useCart';
+import { useLanguage } from '@components/layout/LanguageSwitcher';
 
-const newArrivals = [
-  { id: '5', name: 'دفتر ملاحظات جلد', price: 95, originalPrice: null, image: null, isNew: true },
-  { id: '6', name: 'طقم أقلام فرش', price: 180, originalPrice: null, image: null, isNew: true },
-  { id: '7', name: 'ملصقات إبداعية', price: 45, originalPrice: 60, image: null, isNew: true },
-  { id: '8', name: 'علبة هدايا مميزة', price: 320, originalPrice: null, image: null, isNew: true },
-];
+type Product = {
+  id: string;
+  name_en: string;
+  name_ar: string;
+  slug: string;
+  original_price: number;
+  sale_price?: number | null;
+  stock: number;
+  cover_image?: string | null;
+  product_images?: Array<{ path: string; alt_text: string }>;
+};
 
 export const NewArrivalsSection = () => {
-  return (
-    <section className="section-padding bg-cream/50">
-      <div className="container-wide">
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-12 gap-4">
-          <div>
-            <span className="inline-block text-sm font-body text-terracotta font-medium tracking-wider uppercase mb-3">
-              Just Arrived
-            </span>
-            <h3 className="text-3xl md:text-4xl font-display font-bold text-ink">
-              وصولات <span className="text-terracotta">جديدة</span>
+  const lang = useLanguage();
+  const t = (ar: string, en: string) => (lang === 'ar' ? ar : en);
+  const navigate = useNavigate();
+  const { addItem } = useCart();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name_en, name_ar, slug, original_price, sale_price, stock, cover_image, product_images(path, alt_text)')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+        .limit(4);
+      if (error) {
+        console.error('NewArrivalsSection fetch error:', error.message, error);
+        setProducts([]);
+        return;
+      }
+      setProducts(data || []);
+    } catch (err) {
+      console.error('NewArrivalsSection unexpected error:', err);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="py-16" style={{ backgroundColor: '#F9F6F0' }}>
+        <div className="container-wide">
+          <div className="h-8 w-40 bg-card rounded-lg mb-8 animate-pulse" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl p-3 shadow-sm animate-pulse">
+                <div className="aspect-square bg-card rounded-xl mb-3" />
+                <div className="h-4 bg-card rounded w-3/4 mb-2" />
+                <div className="h-4 bg-card rounded w-1/2" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <section className="py-16" style={{ backgroundColor: '#F9F6F0' }}>
+        <div className="container-wide">
+          <div className="flex items-center gap-3 mb-8">
+            <Flower2 className="w-6 h-6" style={{ color: '#C25350' }} />
+            <h3 className="text-2xl md:text-3xl font-display font-bold" style={{ color: '#2C1E1B' }}>
+              {t('وصولات جديدة', 'New Arrivals')}
             </h3>
           </div>
-          <a href="/shop" className="btn-outline text-sm py-2.5 px-6">
-            عرض الكل
-          </a>
+          <div className="bg-white rounded-2xl border-2 border-line p-10 text-center">
+            <p className="font-medium" style={{ color: '#5A4A42' }}>
+              {t('لا توجد وصولات جديدة حالياً', 'No new arrivals right now')}
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="py-16" style={{ backgroundColor: '#F9F6F0' }}>
+      <div className="container-wide">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <Flower2 className="w-6 h-6" style={{ color: '#C25350' }} />
+            <h3 className="text-2xl md:text-3xl font-display font-bold" style={{ color: '#2C1E1B' }}>
+              {t('وصولات جديدة', 'New Arrivals')}
+            </h3>
+          </div>
+          <Link to="/shop" className="text-sm font-bold flex items-center gap-1 hover:underline" style={{ color: '#C25350' }}>
+            {t('عرض الكل', 'View All')} <ChevronRight className="w-4 h-4 rtl:rotate-180" />
+          </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {newArrivals.map((product, i) => {
-            const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          {products.map((p) => {
+            const name = lang === 'ar' ? p.name_ar : p.name_en;
+            const price = p.sale_price || p.original_price;
+            const hasDiscount = p.sale_price && p.sale_price < p.original_price;
+            const img = p.product_images?.[0]?.path || p.cover_image;
 
             return (
-              <div
-                key={product.id}
-                className="sticker-card overflow-hidden group"
-                style={{ animationDelay: `${i * 100}ms` }}
-              >
-                <div className="relative aspect-square bg-gradient-to-br from-sage/10 to-cream overflow-hidden">
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="w-20 h-20 bg-sage/20 rounded-2xl flex items-center justify-center">
-                      <ShoppingCart className="w-8 h-8 text-sage/40" />
-                    </div>
-                  </div>
-
-                  <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/10 transition-colors duration-300" />
-
-                  {product.isNew && (
-                    <div className="absolute top-3 right-3 bg-sage text-white text-xs font-bold
-                      px-2.5 py-1 rounded-full">
-                      NEW
+              <div key={p.id} className="bg-white rounded-2xl p-3 shadow-sm cursor-pointer group"
+                onClick={() => navigate(`/products/${p.slug}`)}>
+                <div className="relative aspect-square rounded-xl overflow-hidden mb-3" style={{ backgroundColor: '#F9F6F0' }}>
+                  {img ? (
+                    <img src={img} alt={name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ShoppingCart className="w-10 h-10" style={{ color: '#C25350', opacity: 0.3 }} />
                     </div>
                   )}
+
+                  <button className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={t('إضافة للمفضلة', 'Add to wishlist')}>
+                    <Heart className="w-4 h-4" style={{ color: '#5A4A42' }} />
+                  </button>
 
                   {hasDiscount && (
-                    <div className="absolute top-3 left-3 bg-terracotta text-white text-xs font-bold
-                      px-2.5 py-1 rounded-full">
-                      خصم
+                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
+                      style={{ backgroundColor: '#C25350' }}>
+                      {t('خصم', 'SALE')}
                     </div>
                   )}
-
-                  <button
-                    className="absolute top-3 left-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full
-                      flex items-center justify-center opacity-0 group-hover:opacity-100
-                      transition-all duration-300 hover:bg-terracotta hover:text-white
-                      translate-y-2 group-hover:translate-y-0 shadow-card"
-                    aria-label="إضافة للمفضلة"
-                  >
-                    <Heart className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    className="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur-sm rounded-xl
-                      py-2.5 text-sm font-bold text-ink opacity-0 group-hover:opacity-100
-                      transition-all duration-300 translate-y-2 group-hover:translate-y-0
-                      hover:bg-terracotta hover:text-white shadow-card
-                      flex items-center justify-center gap-2"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                    أضف للسلة
-                  </button>
                 </div>
 
-                <div className="p-4">
-                  <h4 className="font-body font-medium text-ink text-sm line-clamp-2 mb-2 min-h-[2.5rem]">
-                    {product.name}
-                  </h4>
+                <div className="px-1 pb-1">
+                  <h4 className="font-body font-medium text-sm line-clamp-2 mb-2 min-h-[2.5rem]" style={{ color: '#2C1E1B' }}>{name}</h4>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-terracotta font-bold text-lg">{product.price} EGP</span>
+                    <span className="font-bold" style={{ color: '#C25350' }}>{price} EGP</span>
                     {hasDiscount && (
-                      <span className="text-muted text-sm line-through">{product.originalPrice} EGP</span>
+                      <span className="text-xs line-through" style={{ color: '#5A4A42' }}>{p.original_price} EGP</span>
                     )}
                   </div>
                 </div>

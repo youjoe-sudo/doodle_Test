@@ -17,18 +17,18 @@ export const ConfirmDialog = ({ open, onClose, onConfirm, title, message, loadin
         <AlertTriangle className="w-7 h-7 text-red-500" />
       </div>
       <p className="text-muted mb-6">{message}</p>
-      <div className="flex gap-3 justify-center">
+      <div className="flex flex-col-reverse sm:flex-row gap-3 justify-center">
         <button
           onClick={onClose}
           disabled={loading}
-          className="px-6 py-2.5 rounded-full border-2 border-line text-ink font-medium hover:bg-cream transition-colors disabled:opacity-50"
+          className="min-h-[48px] px-6 py-3 rounded-full border-2 border-line text-ink font-medium hover:bg-cream transition-colors disabled:opacity-50 flex-1 sm:flex-none"
         >
           إلغاء
         </button>
         <button
           onClick={onConfirm}
           disabled={loading}
-          className="px-6 py-2.5 rounded-full bg-red-500 text-white font-bold border-2 border-ink shadow-[3px_3px_0px_0px_#1E293B] hover:shadow-[5px_5px_0px_0px_#1E293B] hover:-translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1E293B] transition-all disabled:opacity-50"
+          className="min-h-[48px] px-6 py-3 rounded-full bg-red-500 text-white font-bold border-2 border-ink shadow-[3px_3px_0px_0px_#1E293B] hover:shadow-[5px_5px_0px_0px_#1E293B] hover:-translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1E293B] transition-all disabled:opacity-50 flex-1 sm:flex-none"
         >
           {loading ? 'جاري الحذف...' : 'تأكيد الحذف'}
         </button>

@@ -37,7 +37,11 @@ export const Modal = ({ open, onClose, title, children, wide }: ModalProps) => {
       <div className={`relative bg-white border-2 border-ink rounded-2xl shadow-[6px_6px_0px_0px_#1E293B] w-full ${wide ? 'max-w-2xl' : 'max-w-lg'} max-h-[90vh] flex flex-col animate-in`}>
         <div className="flex items-center justify-between px-6 py-4 border-b-2 border-line">
           <h3 className="text-lg font-bold text-ink" style={{ fontFamily: 'Outfit, sans-serif' }}>{title}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-cream transition-colors">
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="min-w-[48px] min-h-[48px] rounded-xl hover:bg-cream transition-colors flex items-center justify-center"
+          >
             <X className="w-5 h-5 text-muted" />
           </button>
         </div>

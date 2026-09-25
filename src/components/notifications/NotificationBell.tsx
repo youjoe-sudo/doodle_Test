@@ -55,15 +55,21 @@ export const NotificationBell = () => {
   }, []);
 
   const fetchNotifications = async () => {
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('*')
-      .or(`user_id.eq.${user!.id},user_id.is.null`)
-      .order('created_at', { ascending: false })
-      .limit(20);
-    if (!error) {
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .or(`user_id.eq.${user!.id},user_id.is.null`)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (error) {
+        console.error('NotificationBell fetch error:', error.message, error);
+        return;
+      }
       setNotifications(data || []);
       setUnread((data || []).filter((n) => !n.is_read).length);
+    } catch (err) {
+      console.error('NotificationBell unexpected error:', err);
     }
   };
 

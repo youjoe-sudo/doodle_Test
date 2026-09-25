@@ -14,6 +14,8 @@ type DataTableProps<T> = {
   searchPlaceholder?: string;
   searchKeys?: string[];
   emptyMessage?: string;
+  /** Hide table on mobile (pair with custom mobile cards) */
+  hideOnMobile?: boolean;
 };
 
 export function DataTable<T extends Record<string, any>>({
@@ -22,6 +24,7 @@ export function DataTable<T extends Record<string, any>>({
   searchPlaceholder,
   searchKeys = [],
   emptyMessage = 'لا توجد بيانات',
+  hideOnMobile = false,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState('');
 
@@ -34,21 +37,21 @@ export function DataTable<T extends Record<string, any>>({
   }, [data, search, searchKeys]);
 
   return (
-    <div>
+    <div className={hideOnMobile ? 'hidden md:block' : ''}>
       {searchPlaceholder && searchKeys.length > 0 && (
         <div className="mb-4 relative max-w-sm">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full pr-10 pl-4 py-2.5 border-2 border-line rounded-xl text-sm bg-white focus:border-terracotta focus:outline-none transition-colors"
+            className="w-full min-h-[48px] pr-11 pl-4 py-3 border-2 border-line rounded-xl text-sm bg-white focus:border-terracotta focus:outline-none transition-colors"
           />
         </div>
       )}
 
-      <div className="overflow-x-auto border-2 border-line rounded-2xl bg-white">
+      <div className="overflow-x-auto border-2 border-line rounded-2xl bg-white max-w-full">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b-2 border-line bg-cream/50">

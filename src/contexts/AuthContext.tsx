@@ -26,11 +26,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchProfile = async (userId: string) => {
     setProfileLoading(true);
     try {
-      const { data: rawData } = await supabase
+      const { data: rawData, error } = await supabase
         .from('profiles')
         .select('role, is_banned, ban_reason, banned_until')
         .eq('id', userId)
         .single();
+
+      if (error) {
+        console.error('AuthContext fetchProfile error:', error.message, error);
+        setProfile(null);
+        return;
+      }
 
       let data = rawData;
 

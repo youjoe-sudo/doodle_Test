@@ -6,22 +6,27 @@
 
 @theme {
   /* Colors */
-  --color-cream: #f8f2ec;
-  --color-paper: #fffaf5;
-  --color-terracotta: #bd745d;
-  --color-terracotta-dark: #914b3a;
-  --color-terracotta-light: #d4956f;
-  --color-sage: #b7b69a;
-  --color-sage-dark: #77765d;
-  --color-blush: #edc7c0;
-  --color-ink: #3d3430;
-  --color-muted: #84766f;
-  --color-line: #eaded5;
+  --color-cream: #FDFBF7;
+  --color-paper: #FDFBF7;
+  --color-card: #F9F6F0;
+  --color-terracotta: #C25350;
+  --color-terracotta-dark: #A04441;
+  --color-terracotta-light: #D47875;
+  --color-sage: #E4EFE7;
+  --color-sage-dark: #5B8A6A;
+  --color-blush: #FBE3E5;
+  --color-lavender: #ECE5F5;
+  --color-peach: #F9EAE1;
+  --color-ink: #2C1E1B;
+  --color-muted: #5A4A42;
+  --color-line: #E2E8F0;
+  --color-heading: #2C1E1B;
+  --color-body: #5A4A42;
 
   /* Fonts */
-  --font-display: "Playfair Display", "Alexandria", serif;
-  --font-body: "DM Sans", "IBM Plex Sans Arabic", sans-serif;
-  --font-decorative: "Parisienne", cursive;
+  --font-display: "Comfortaa", "Cairo", cursive;
+  --font-body: "Inter", "Cairo", sans-serif;
+  --font-decorative: "Playfair Display", serif;
 
   /* Border Radius */
   --radius-sm: 8px;
@@ -104,6 +109,33 @@
 }
 
 /* ============================================
+   ADMIN / MOBILE TOUCH TARGETS (≥48px)
+   ============================================ */
+
+@layer components {
+  .admin-field {
+    min-height: 48px;
+  }
+
+  .admin-touch {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 767px) {
+  main input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  main select,
+  main textarea {
+    min-height: 48px;
+  }
+
+  main button {
+    min-height: 44px;
+  }
+}
+
+/* ============================================
    BASE STYLES
    ============================================ */
 
@@ -139,6 +171,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -187,18 +220,16 @@
     font-weight: 700;
     padding: 0.875rem 2rem;
     border-radius: 9999px;
-    border: 2px solid var(--color-ink);
-    box-shadow: var(--shadow-btn);
+    border: none;
+    box-shadow: none;
     transition: all 0.2s ease-out;
   }
   .btn-primary:hover {
     background-color: var(--color-terracotta-dark);
-    transform: translate(-2px, -2px);
-    box-shadow: var(--shadow-btn-hover);
+    transform: translateY(-2px);
   }
   .btn-primary:active {
-    transform: translate(2px, 2px);
-    box-shadow: var(--shadow-btn-active);
+    transform: translateY(0);
   }
 
   .btn-outline {
@@ -259,14 +290,14 @@
 
   .sticker-card {
     background-color: white;
-    border: 2px solid var(--color-line);
+    border: none;
     border-radius: 1rem;
-    box-shadow: var(--shadow-card);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .sticker-card:hover {
-    box-shadow: var(--shadow-card-hover);
-    transform: rotate(-1deg) scale(1.02);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    transform: translateY(-4px);
   }
 }
 
@@ -321,8 +352,28 @@
   background: var(--color-terracotta);
 }
 
+/* Pastel category backgrounds */
+.bg-pastel-pink { background-color: #FBE3E5; }
+.bg-pastel-mint { background-color: #E4EFE7; }
+.bg-pastel-lavender { background-color: #ECE5F5; }
+.bg-pastel-peach { background-color: #F9EAE1; }
+
+/* Star sparkle decoration */
+.sparkle {
+  position: relative;
+}
+.sparkle::before,
+.sparkle::after {
+  content: '✦';
+  position: absolute;
+  font-size: 0.6em;
+  color: var(--color-terracotta);
+}
+.sparkle::before { top: -0.2em; right: -0.6em; }
+.sparkle::after { bottom: -0.2em; left: -0.6em; }
+
 /* Selection */
 ::selection {
-  background-color: rgba(189, 116, 93, 0.2);
+  background-color: rgba(194, 83, 80, 0.2);
   color: var(--color-ink);
 }
