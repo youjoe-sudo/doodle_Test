@@ -6,6 +6,7 @@ import { supabase } from '@lib/supabase/client';
 
 type HeroSlide = {
   id: string;
+  banner_type?: 'interactive' | 'image_only';
   image_url?: string | null;
   title_ar?: string;
   title_en?: string;
@@ -175,6 +176,57 @@ export const HeroSection = () => {
       </span>
     </>
   );
+
+  const isImageOnly = current.banner_type === 'image_only' && !!current.image_url;
+
+  const dots = (
+    <div
+      className="mt-8 flex items-center justify-center gap-2"
+      aria-label={t('شرائح البانر', 'Hero slides')}
+    >
+      {slides.map((s, i) => (
+        <button
+          key={s.id || i}
+          type="button"
+          onClick={() => setIndex(i)}
+          aria-label={t(`شريحة ${i + 1}`, `Slide ${i + 1}`)}
+          aria-current={i === safeIndex ? 'true' : undefined}
+          className="rounded-full transition-all"
+          style={{
+            width: i === safeIndex ? 28 : 10,
+            height: 10,
+            backgroundColor: i === safeIndex ? '#C25350' : '#E2E8F0',
+            border: '2px solid #2C1E1B',
+          }}
+        />
+      ))}
+    </div>
+  );
+
+  /* ── Image-Only banner: raw image, no text / CTA ── */
+  if (isImageOnly) {
+    return (
+      <section className="relative overflow-hidden py-10 md:py-14" style={{ backgroundColor: '#FDFBF7' }}>
+        <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full opacity-60" style={{ backgroundColor: '#FBBF24' }} />
+        <div className="absolute bottom-0 right-1/4 w-40 h-40 rounded-full opacity-50" style={{ backgroundColor: '#E4EFE7' }} />
+        <div className="absolute inset-0 dot-pattern opacity-10 pointer-events-none" />
+        <div className="container-wide relative z-10">
+          <div
+            className="w-full rounded-3xl overflow-hidden border-[3px]"
+            style={{ borderColor: '#2C1E1B', boxShadow: '8px 8px 0 0 #F472B6', aspectRatio: '1200 / 500' }}
+            data-testid="hero-image-only"
+          >
+            <img
+              src={current.image_url!}
+              alt={t('بانر الصفحة الرئيسية', 'Homepage banner')}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          {slides.length > 1 && dots}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative overflow-hidden py-16 md:py-24" style={{ backgroundColor: '#FDFBF7' }}>

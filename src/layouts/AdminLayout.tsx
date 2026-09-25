@@ -9,7 +9,7 @@ import {
 
 const sidebarLinks = [
   { to: '/admin', icon: LayoutDashboard, label: 'لوحة التحكم', exact: true },
-  { to: '/admin/hero-banners', icon: ImageIcon, label: 'بانرات الرئيسية' },
+  { to: '/admin/banner-management', icon: ImageIcon, label: 'إدارة البانرات' },
   { to: '/admin/about-builder', icon: FileText, label: 'صفحة من نحن' },
   { to: '/admin/products', icon: Package, label: 'المنتجات' },
   { to: '/admin/categories', icon: Tags, label: 'التصنيفات' },

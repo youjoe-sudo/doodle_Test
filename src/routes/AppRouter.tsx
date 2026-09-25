@@ -108,6 +108,7 @@ export const router = createBrowserRouter([
         { path: 'notifications', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminNotifications /></Suspense></AdminRoute> },
         { path: 'coloring', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminColoring /></Suspense></AdminRoute> },
         { path: 'hero-banners', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminHeroBanners /></Suspense></AdminRoute> },
+        { path: 'banner-management', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminHeroBanners /></Suspense></AdminRoute> },
         { path: 'about-builder', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminAboutBuilder /></Suspense></AdminRoute> },
         { path: 'settings', element: <AdminRoute><Suspense fallback={<AdminLoading />}><AdminSettings /></Suspense></AdminRoute> },
       ],

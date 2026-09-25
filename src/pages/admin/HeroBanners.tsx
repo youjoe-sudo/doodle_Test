@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@lib/supabase/client';
 import { ToastManager, useToasts } from '@components/admin/Toast';
-import { Upload, Trash2, Save, Image as ImageIcon, AlertCircle, ArrowUp, ArrowDown, Link2, ExternalLink } from 'lucide-react';
+import {
+  Upload, Trash2, Save, Image as ImageIcon, AlertCircle,
+  ArrowUp, ArrowDown, Link2, ExternalLink, Layers, Sparkles, Plus,
+} from 'lucide-react';
 
 const REQUIRED_W = 1200;
 const REQUIRED_H = 500;
-const TARGET_RATIO = REQUIRED_W / REQUIRED_H; // 2.4 (16:6.67 ≈ near 16:9 family)
+const TARGET_RATIO = REQUIRED_W / REQUIRED_H; // 2.4
 const RATIO_TOLERANCE = 0.02;
 const DIMENSION_ERROR = 'Image must meet the exact dimensions: 1200x500px';
 
@@ -17,6 +20,8 @@ export type CtaPreset =
   | 'about'
   | 'contact'
   | 'custom';
+
+export type BannerType = 'interactive' | 'image_only';
 
 export const CTA_PRESETS: Array<{ value: CtaPreset; label: string; route: string }> = [
   { value: 'shop', label: 'Shop / New Product Launch', route: '/shop' },
@@ -30,6 +35,7 @@ export const CTA_PRESETS: Array<{ value: CtaPreset; label: string; route: string
 
 export type HeroBanner = {
   id: string;
+  banner_type?: BannerType;
   image_url: string;
   title_ar: string;
   title_en: string;
@@ -46,6 +52,7 @@ export type HeroBanner = {
 
 const emptyBanner = (): HeroBanner => ({
   id: crypto.randomUUID(),
+  banner_type: 'interactive',
   image_url: '',
   title_ar: '',
   title_en: '',
@@ -100,6 +107,7 @@ export const AdminHeroBanners = () => {
         ...emptyBanner(),
         ...b,
         id: b.id || crypto.randomUUID(),
+        banner_type: (b.banner_type as BannerType) || 'interactive',
         description_ar: b.description_ar ?? b.desc_ar ?? '',
         description_en: b.description_en ?? b.desc_en ?? '',
         cta_label_ar: b.cta_label_ar ?? b.cta_ar ?? 'تسوق الآن',
@@ -168,7 +176,7 @@ export const AdminHeroBanners = () => {
     if (!check.ok) {
       let msg = DIMENSION_ERROR;
       if (check.w && check.h) {
-        msg = `${DIMENSION_ERROR} (got ${check.w}x${check.h}, ratio ${(check.w / check.h).toFixed(2)}:1 — required 2.40:1 / 16:9 family)`;
+        msg = `${DIMENSION_ERROR} (got ${check.w}x${check.h}, ratio ${(check.w / check.h).toFixed(2)}:1 — required 2.40:1)`;
       }
       setDimensionError(msg);
       addToast(msg, 'error');
@@ -205,7 +213,7 @@ export const AdminHeroBanners = () => {
           setSaving(false);
           return;
         }
-        if (b.cta_target === 'custom' && !b.cta_href.trim()) {
+        if (b.banner_type !== 'image_only' && b.cta_target === 'custom' && !b.cta_href.trim()) {
           addToast('Custom CTA requires a target URL', 'error');
           setSaving(false);
           return;
@@ -237,14 +245,14 @@ export const AdminHeroBanners = () => {
       <label className="block text-xs font-bold uppercase tracking-wide text-muted mb-1">{label}</label>
       {multiline ? (
         <textarea
-          className="w-full border-2 border-line rounded-xl px-3 py-3 text-sm min-h-[48px]"
+          className="w-full border-2 border-line rounded-xl px-3 py-3 text-sm min-h-[72px] focus:border-terracotta focus:outline-none"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           dir={dir}
         />
       ) : (
         <input
-          className="w-full border-2 border-line rounded-xl px-3 py-3 text-sm min-h-[48px]"
+          className="w-full border-2 border-line rounded-xl px-3 py-3 text-sm min-h-[48px] focus:border-terracotta focus:outline-none"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           dir={dir}
@@ -254,30 +262,44 @@ export const AdminHeroBanners = () => {
   );
 
   if (loading) {
-    return <div className="text-muted py-10 text-center">Loading hero banners…</div>;
+    return (
+      <div className="space-y-4">
+        {[...Array(2)].map((_, i) => (
+          <div key={i} className="h-56 bg-white border-2 border-line rounded-3xl animate-pulse" />
+        ))}
+      </div>
+    );
   }
 
   return (
     <div className="max-w-5xl mx-auto">
       <ToastManager toasts={toasts} removeToast={removeToast} />
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-ink">Advanced Hero Banner Management</h1>
-          <p className="text-sm text-muted mt-1">
-            Strict size: <strong>{REQUIRED_W}×{REQUIRED_H}px</strong> (ratio 2.4:1 / 16:9 family). Mismatched uploads are rejected.
-          </p>
+
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <span className="w-12 h-12 rounded-2xl bg-blush border-2 border-ink flex items-center justify-center shadow-[3px_3px_0px_0px_#1E293B]">
+            <Layers className="w-6 h-6 text-terracotta" />
+          </span>
+          <div>
+            <h1 className="text-2xl font-display font-bold text-ink">بانرات الرئيسية</h1>
+            <p className="text-sm text-muted mt-0.5">
+              المقاس المطلوب <strong>{REQUIRED_W}×{REQUIRED_H}</strong> (نسبة 2.4:1) — أي مقاس آخر يُرفض.
+            </p>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={addBanner} className="btn-outline text-sm min-h-[48px] py-3 px-4">+ Add Banner</button>
-          <button onClick={handleSave} disabled={saving} className="btn-primary text-sm min-h-[48px] py-3 px-5">
-            <Save className="w-4 h-4" /> {saving ? 'Saving…' : 'Save'}
+          <button onClick={addBanner} className="btn-outline text-sm min-h-[48px] py-3 px-5" data-testid="add-banner">
+            <Plus className="w-4 h-4" /> بانر جديد
+          </button>
+          <button onClick={handleSave} disabled={saving} className="btn-primary text-sm min-h-[48px] py-3 px-5" data-testid="save-banners">
+            <Save className="w-4 h-4" /> {saving ? 'جاري الحفظ…' : 'حفظ'}
           </button>
         </div>
       </div>
 
       {dimensionError && (
         <div
-          className="mb-4 flex items-start gap-2 p-4 rounded-xl border-2 border-red-400 bg-red-50 text-red-700 text-sm"
+          className="mb-4 flex items-start gap-2 p-4 rounded-2xl border-2 border-red-400 bg-red-50 text-red-700 text-sm"
           role="alert"
           data-testid="hero-dimension-error"
         >
@@ -288,33 +310,51 @@ export const AdminHeroBanners = () => {
 
       <div className="space-y-6">
         {banners.map((banner, i) => {
+          const isImageOnly = banner.banner_type === 'image_only';
           const presetRoute =
             banner.cta_target === 'custom'
               ? banner.cta_href
               : CTA_PRESETS.find((p) => p.value === banner.cta_target)?.route || '/shop';
+
           return (
-            <div key={banner.id} className="bg-white border-2 border-line rounded-2xl p-5 shadow-sm" data-testid={`hero-banner-${i}`}>
-              <div className="flex items-center justify-between mb-4">
-                <span className="font-bold text-ink text-sm">Banner {i + 1}</span>
+            <div
+              key={banner.id}
+              className="bg-white border-2 border-ink rounded-3xl p-5 shadow-[6px_6px_0px_0px_#E2E8F0]"
+              data-testid={`hero-banner-${i}`}
+            >
+              {/* Card header */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-9 h-9 rounded-full bg-lavender border-2 border-ink flex items-center justify-center text-sm font-bold text-ink">
+                    {i + 1}
+                  </span>
+                  <span
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 ${
+                      isImageOnly ? 'bg-sage/40 border-ink text-ink' : 'bg-peach border-ink text-ink'
+                    }`}
+                  >
+                    {isImageOnly ? 'صورة فقط' : 'بانر تفاعلي'}
+                  </span>
+                </div>
                 <div className="flex flex-wrap items-center gap-1">
-                  <button onClick={() => moveBanner(i, -1)} className="w-11 h-11 md:w-8 md:h-8 rounded-lg hover:bg-cream flex items-center justify-center" aria-label="Move up">
+                  <button onClick={() => moveBanner(i, -1)} className="w-11 h-11 md:w-9 md:h-9 rounded-xl hover:bg-cream flex items-center justify-center border-2 border-line" aria-label="Move up">
                     <ArrowUp className="w-4 h-4" />
                   </button>
-                  <button onClick={() => moveBanner(i, 1)} className="w-11 h-11 md:w-8 md:h-8 rounded-lg hover:bg-cream flex items-center justify-center" aria-label="Move down">
+                  <button onClick={() => moveBanner(i, 1)} className="w-11 h-11 md:w-9 md:h-9 rounded-xl hover:bg-cream flex items-center justify-center border-2 border-line" aria-label="Move down">
                     <ArrowDown className="w-4 h-4" />
                   </button>
-                  <label className="flex items-center gap-2 text-xs font-medium text-muted ml-2 min-h-[48px] px-2">
+                  <label className="flex items-center gap-2 text-xs font-bold text-ink ml-1 min-h-[48px] px-3 rounded-xl border-2 border-line hover:bg-cream cursor-pointer">
                     <input
                       type="checkbox"
-                      className="w-5 h-5"
+                      className="w-5 h-5 accent-[#C25350]"
                       checked={banner.active}
                       onChange={(e) => updateBanner(banner.id, { active: e.target.checked })}
                     />
-                    Active
+                    نشط
                   </label>
                   <button
                     onClick={() => removeBanner(banner.id)}
-                    className="w-11 h-11 md:w-8 md:h-8 rounded-lg hover:bg-red-50 text-red-500 flex items-center justify-center"
+                    className="w-11 h-11 md:w-9 md:h-9 rounded-xl hover:bg-red-50 text-red-500 flex items-center justify-center border-2 border-line"
                     aria-label="Delete banner"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -326,15 +366,15 @@ export const AdminHeroBanners = () => {
                 {/* Image + validation */}
                 <div>
                   <div
-                    className="rounded-xl border-2 border-dashed border-line bg-cream flex items-center justify-center overflow-hidden mb-2"
+                    className="rounded-2xl border-2 border-dashed border-line bg-cream flex items-center justify-center overflow-hidden mb-3"
                     style={{ aspectRatio: '1200 / 500' }}
                   >
                     {banner.image_url ? (
                       <img src={banner.image_url} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-center text-muted text-xs p-3">
-                        <ImageIcon className="w-6 h-6 mx-auto mb-1" />
-                        Preview — {REQUIRED_W}×{REQUIRED_H} (2.4:1)
+                        <ImageIcon className="w-7 h-7 mx-auto mb-1" />
+                        معاينة — {REQUIRED_W}×{REQUIRED_H}
                       </div>
                     )}
                   </div>
@@ -346,74 +386,125 @@ export const AdminHeroBanners = () => {
                       onChange={(e) => handleUpload(e.target.files?.[0], banner.id)}
                       disabled={uploadingId === banner.id}
                     />
-                    <span className="btn-outline w-full text-xs py-2">
-                      <Upload className="w-3.5 h-3.5" />
-                      {uploadingId === banner.id ? 'Uploading…' : `Upload exactly ${REQUIRED_W}×${REQUIRED_H}`}
+                    <span className="btn-outline w-full text-sm min-h-[48px] py-3 flex items-center justify-center gap-2">
+                      <Upload className="w-4 h-4" />
+                      {uploadingId === banner.id ? 'جاري الرفع…' : `ارفع صورة ${REQUIRED_W}×${REQUIRED_H}`}
                     </span>
                   </label>
-                  <p className="text-[11px] text-muted mt-1">
-                    Rejects wrong dimensions or aspect ratio (must be 2.40:1 ±2%).
+                  <p className="text-[11px] text-muted mt-1.5">
+                    يُرفض أي مقاس غير صحيح (النسبة 2.40:1 ±2%).
                   </p>
+
+                  {/* Banner type toggle */}
+                  <div className="mt-4">
+                    <label className="block text-xs font-bold uppercase tracking-wide text-muted mb-2">نوع البانر</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        data-testid="banner-type-interactive"
+                        onClick={() => updateBanner(banner.id, { banner_type: 'interactive' })}
+                        className={`min-h-[48px] px-3 py-3 rounded-xl border-2 text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                          !isImageOnly
+                            ? 'border-ink bg-terracotta text-white shadow-[3px_3px_0px_0px_#1E293B]'
+                            : 'border-line bg-white text-ink hover:bg-cream'
+                        }`}
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        تفاعلي
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="banner-type-image-only"
+                        onClick={() => updateBanner(banner.id, { banner_type: 'image_only' })}
+                        className={`min-h-[48px] px-3 py-3 rounded-xl border-2 text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                          isImageOnly
+                            ? 'border-ink bg-sage text-ink shadow-[3px_3px_0px_0px_#1E293B]'
+                            : 'border-line bg-white text-ink hover:bg-cream'
+                        }`}
+                      >
+                        <ImageIcon className="w-4 h-4" />
+                        صورة فقط
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-muted mt-1.5">
+                      {isImageOnly
+                        ? 'يعرض الصورة مباشرة بدون نصوص أو زر CTA.'
+                        : 'يعرض النصوص وزر CTA فوق/بجانب الصورة.'}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Dynamic content */}
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    {field('Title (AR)', banner.title_ar, (v) => updateBanner(banner.id, { title_ar: v }), 'rtl')}
-                    {field('Title (EN)', banner.title_en, (v) => updateBanner(banner.id, { title_en: v }), 'ltr')}
-                    {field('Subtitle (AR)', banner.subtitle_ar, (v) => updateBanner(banner.id, { subtitle_ar: v }), 'rtl')}
-                    {field('Subtitle (EN)', banner.subtitle_en, (v) => updateBanner(banner.id, { subtitle_en: v }), 'ltr')}
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {field('Description (AR)', banner.description_ar, (v) => updateBanner(banner.id, { description_ar: v }), 'rtl', true)}
-                    {field('Description (EN)', banner.description_en, (v) => updateBanner(banner.id, { description_en: v }), 'ltr', true)}
-                  </div>
-
-                  {/* CTA Link Builder */}
-                  <div className="border-2 border-line rounded-xl p-3 bg-cream/50" data-testid="cta-link-builder">
-                    <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase tracking-wide text-muted">
-                      <Link2 className="w-3.5 h-3.5" /> CTA Link Builder
+                {/* Content — hidden for image-only banners */}
+                {!isImageOnly ? (
+                  <div className="space-y-3" data-testid="banner-interactive-fields">
+                    <div className="grid grid-cols-2 gap-3">
+                      {field('Title (AR)', banner.title_ar, (v) => updateBanner(banner.id, { title_ar: v }), 'rtl')}
+                      {field('Title (EN)', banner.title_en, (v) => updateBanner(banner.id, { title_en: v }), 'ltr')}
+                      {field('Subtitle (AR)', banner.subtitle_ar, (v) => updateBanner(banner.id, { subtitle_ar: v }), 'rtl')}
+                      {field('Subtitle (EN)', banner.subtitle_en, (v) => updateBanner(banner.id, { subtitle_en: v }), 'ltr')}
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      {field('CTA Label (AR)', banner.cta_label_ar, (v) => updateBanner(banner.id, { cta_label_ar: v }), 'rtl')}
-                      {field('CTA Label (EN)', banner.cta_label_en, (v) => updateBanner(banner.id, { cta_label_en: v }), 'ltr')}
+                      {field('Description (AR)', banner.description_ar, (v) => updateBanner(banner.id, { description_ar: v }), 'rtl', true)}
+                      {field('Description (EN)', banner.description_en, (v) => updateBanner(banner.id, { description_en: v }), 'ltr', true)}
                     </div>
-                    <div className="mt-3">
-                      <label className="block text-xs font-bold uppercase tracking-wide text-muted mb-1">Target route</label>
-                      <select
-                        className="w-full border-2 border-line rounded-xl px-3 py-3 text-sm min-h-[48px] bg-white"
-                        value={banner.cta_target}
-                        onChange={(e) => updateBanner(banner.id, { cta_target: e.target.value as CtaPreset })}
-                      >
-                        {CTA_PRESETS.map((p) => (
-                          <option key={p.value} value={p.value}>
-                            {p.label}
-                            {p.route ? ` → ${p.route}` : ''}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {banner.cta_target === 'custom' ? (
-                      <div className="mt-3">
-                        <label className="block text-xs font-bold uppercase tracking-wide text-muted mb-1">
-                          Custom URL
-                        </label>
-                        <input
-                          className="w-full border-2 border-line rounded-xl px-3 py-3 text-sm min-h-[48px]"
-                          placeholder="/products/cute-and-cozy or https://…"
-                          value={banner.cta_href}
-                          onChange={(e) => updateBanner(banner.id, { cta_href: e.target.value })}
-                          dir="ltr"
-                          data-testid="cta-custom-url"
-                        />
+
+                    {/* CTA Link Builder */}
+                    <div className="border-2 border-line rounded-2xl p-4 bg-blush/40" data-testid="cta-link-builder">
+                      <div className="flex items-center gap-2 mb-3 text-xs font-bold uppercase tracking-wide text-muted">
+                        <Link2 className="w-4 h-4" /> CTA Link Builder
                       </div>
-                    ) : null}
-                    <div className="mt-3 flex items-center gap-2 text-xs text-muted">
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      Resolves to: <code className="text-terracotta font-bold">{presetRoute || '—'}</code>
+                      <div className="grid grid-cols-2 gap-3">
+                        {field('CTA Label (AR)', banner.cta_label_ar, (v) => updateBanner(banner.id, { cta_label_ar: v }), 'rtl')}
+                        {field('CTA Label (EN)', banner.cta_label_en, (v) => updateBanner(banner.id, { cta_label_en: v }), 'ltr')}
+                      </div>
+                      <div className="mt-3">
+                        <label className="block text-xs font-bold uppercase tracking-wide text-muted mb-1">Target route</label>
+                        <select
+                          className="w-full border-2 border-line rounded-xl px-3 py-3 text-sm min-h-[48px] bg-white focus:border-terracotta focus:outline-none"
+                          value={banner.cta_target}
+                          onChange={(e) => updateBanner(banner.id, { cta_target: e.target.value as CtaPreset })}
+                        >
+                          {CTA_PRESETS.map((p) => (
+                            <option key={p.value} value={p.value}>
+                              {p.label}
+                              {p.route ? ` → ${p.route}` : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {banner.cta_target === 'custom' ? (
+                        <div className="mt-3">
+                          <label className="block text-xs font-bold uppercase tracking-wide text-muted mb-1">
+                            Custom URL
+                          </label>
+                          <input
+                            className="w-full border-2 border-line rounded-xl px-3 py-3 text-sm min-h-[48px] focus:border-terracotta focus:outline-none"
+                            placeholder="/products/cute-and-cozy or https://…"
+                            value={banner.cta_href}
+                            onChange={(e) => updateBanner(banner.id, { cta_href: e.target.value })}
+                            dir="ltr"
+                            data-testid="cta-custom-url"
+                          />
+                        </div>
+                      ) : null}
+                      <div className="mt-3 flex items-center gap-2 text-xs text-muted">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        Resolves to: <code className="text-terracotta font-bold">{presetRoute || '—'}</code>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div
+                    className="rounded-2xl border-2 border-dashed border-sage-dark/40 bg-sage/30 p-5 flex flex-col items-center justify-center text-center min-h-[220px]"
+                    data-testid="banner-image-only-info"
+                  >
+                    <ImageIcon className="w-9 h-9 text-sage-dark mb-2" />
+                    <p className="font-bold text-ink text-sm">بانر صورة فقط</p>
+                    <p className="text-xs text-muted mt-1 max-w-[26ch]">
+                      ستُعرض الصورة كما هي في السلايدر — بدون عنوان، وصف أو زر CTA.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           );

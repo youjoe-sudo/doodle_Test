@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@lib/supabase/client';
 import { useAuth } from '@contexts/AuthContext';
-import { ShoppingCart, Package, Users, LifeBuoy, TrendingUp, Clock } from 'lucide-react';
+import {
+  ShoppingCart, Package, Users, LifeBuoy, TrendingUp, Clock,
+  Image as ImageIcon, SlidersHorizontal, Sparkles,
+} from 'lucide-react';
 
 type Stats = {
   totalOrders: number;
@@ -53,12 +57,18 @@ export const AdminDashboard = () => {
   }, [user?.id]);
 
   const cards = [
-    { label: 'إجمالي الطلبات', value: stats.totalOrders, icon: ShoppingCart, color: 'bg-terracotta' },
-    { label: 'طلبات معلقة', value: stats.pendingPayments, icon: Clock, color: 'bg-amber-500' },
-    { label: 'الإيرادات', value: `${stats.revenue.toLocaleString()} EGP`, icon: TrendingUp, color: 'bg-sage' },
-    { label: 'المنتجات', value: stats.totalProducts, icon: Package, color: 'bg-blush' },
-    { label: 'العملاء', value: stats.totalCustomers, icon: Users, color: 'bg-sky-500' },
-    { label: 'تذاكر دعم مفتوحة', value: stats.openTickets, icon: LifeBuoy, color: 'bg-red-500' },
+    { label: 'إجمالي الطلبات', value: stats.totalOrders, icon: ShoppingCart, color: 'bg-terracotta', tint: 'bg-blush' },
+    { label: 'طلبات معلقة', value: stats.pendingPayments, icon: Clock, color: 'bg-amber-500', tint: 'bg-[#FBBF24]/30' },
+    { label: 'الإيرادات', value: `${stats.revenue.toLocaleString()} EGP`, icon: TrendingUp, color: 'bg-sage-dark', tint: 'bg-sage' },
+    { label: 'المنتجات', value: stats.totalProducts, icon: Package, color: 'bg-terracotta', tint: 'bg-blush' },
+    { label: 'العملاء', value: stats.totalCustomers, icon: Users, color: 'bg-sky-500', tint: 'bg-lavender' },
+    { label: 'تذاكر دعم مفتوحة', value: stats.openTickets, icon: LifeBuoy, color: 'bg-red-500', tint: 'bg-red-100' },
+  ];
+
+  const quickActions = [
+    { to: '/admin/banner-management', label: 'إدارة البانرات', icon: ImageIcon, tint: 'bg-blush' },
+    { to: '/admin/settings', label: 'الإعدادات', icon: SlidersHorizontal, tint: 'bg-sage' },
+    { to: '/admin/about-builder', label: 'صفحة من نحن', icon: Sparkles, tint: 'bg-lavender' },
   ];
 
   const statusBadge = (status: string) => {
@@ -85,15 +95,39 @@ export const AdminDashboard = () => {
 
   return (
     <div>
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-ink" style={{ fontFamily: 'Outfit, sans-serif' }}>لوحة التحكم</h2>
-        <p className="text-muted mt-1">مرحباً بك في لوحة إدارة Doodle Room</p>
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="w-12 h-12 rounded-2xl bg-lavender border-2 border-ink flex items-center justify-center shadow-[3px_3px_0px_0px_#1E293B]">
+            <Sparkles className="w-6 h-6 text-terracotta" />
+          </span>
+          <div>
+            <h2 className="text-3xl font-bold text-ink" style={{ fontFamily: 'Outfit, sans-serif' }}>لوحة التحكم</h2>
+            <p className="text-muted mt-1">مرحباً بك في لوحة إدارة Doodle Room</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2" data-testid="dashboard-quick-actions">
+          {quickActions.map((qa) => {
+            const Icon = qa.icon;
+            return (
+              <Link
+                key={qa.to}
+                to={qa.to}
+                className="flex items-center gap-2 min-h-[48px] px-5 py-3 rounded-full border-2 border-ink text-sm font-bold text-ink bg-white shadow-[3px_3px_0px_0px_#1E293B] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#1E293B] transition-all"
+              >
+                <span className={`w-8 h-8 rounded-full ${qa.tint} border-2 border-ink flex items-center justify-center`}>
+                  <Icon className="w-4 h-4 text-ink" />
+                </span>
+                {qa.label}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-28 bg-white border-2 border-line rounded-2xl animate-pulse" />
+            <div key={i} className="h-28 bg-white border-2 border-line rounded-3xl animate-pulse" />
           ))}
         </div>
       ) : (
@@ -102,14 +136,17 @@ export const AdminDashboard = () => {
             {cards.map((card) => {
               const Icon = card.icon;
               return (
-                <div key={card.label} className="bg-white border-2 border-line rounded-2xl p-5 shadow-[4px_4px_0px_0px_#E2E8F0] hover:shadow-[6px_6px_0px_0px_#E2E8F0] transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div
+                  key={card.label}
+                  className="bg-white border-2 border-ink rounded-3xl p-5 shadow-[6px_6px_0px_0px_#E2E8F0] hover:-translate-y-0.5 hover:shadow-[8px_8px_0px_0px_#F472B6] transition-all"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <p className="text-xs text-muted font-medium uppercase tracking-wide">{card.label}</p>
-                      <p className="text-2xl font-bold text-ink mt-1" style={{ fontFamily: 'Outfit, sans-serif' }}>{card.value}</p>
+                      <p className="text-2xl font-bold text-ink mt-1 truncate" style={{ fontFamily: 'Outfit, sans-serif' }}>{card.value}</p>
                     </div>
-                    <div className={`w-12 h-12 ${card.color} rounded-xl flex items-center justify-center shadow-[2px_2px_0px_0px_#1E293B]`}>
-                      <Icon className="w-6 h-6 text-white" />
+                    <div className={`w-14 h-14 ${card.tint} rounded-2xl flex items-center justify-center border-2 border-ink shadow-[2px_2px_0px_0px_#1E293B] shrink-0`}>
+                      <Icon className="w-7 h-7 text-ink" />
                     </div>
                   </div>
                 </div>
@@ -118,11 +155,33 @@ export const AdminDashboard = () => {
           </div>
 
           {/* Recent Orders */}
-          <div className="bg-white border-2 border-line rounded-2xl shadow-[4px_4px_0px_0px_#E2E8F0]">
+          <div className="bg-white border-2 border-ink rounded-3xl shadow-[6px_6px_0px_0px_#E2E8F0] overflow-hidden">
             <div className="px-6 py-4 border-b-2 border-line">
               <h3 className="font-bold text-ink" style={{ fontFamily: 'Outfit, sans-serif' }}>آخر الطلبات</h3>
             </div>
-            <div className="overflow-x-auto">
+
+            {/* Mobile: order cards */}
+            <div className="md:hidden divide-y divide-line" data-testid="recent-orders-mobile">
+              {stats.recentOrders.length === 0 ? (
+                <p className="px-6 py-8 text-center text-muted text-sm">لا توجد طلبات بعد</p>
+              ) : stats.recentOrders.map((order: any) => (
+                <div key={order.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-bold text-ink text-sm truncate">{order.full_name || 'غير معروف'}</span>
+                    <span className="text-sm font-bold text-terracotta shrink-0">{order.total?.toLocaleString()} EGP</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-bold ${statusBadge(order.status)}`}>
+                      {statusLabel(order.status)}
+                    </span>
+                    <span className="text-xs text-muted">{new Date(order.created_at).toLocaleDateString('ar-EG')}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b-2 border-line bg-cream/30">

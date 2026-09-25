@@ -3,6 +3,8 @@ import { supabase } from '@lib/supabase/client';
 import { useAuth } from '@contexts/AuthContext';
 import { ToastManager, useToasts } from '@components/admin/Toast';
 import { Save, Plus, Trash2 } from 'lucide-react';
+import { DEFAULT_ANNOUNCEMENT, type AnnouncementConfig } from '@components/home/AnnouncementBar';
+import { useLanguage } from '@components/layout/LanguageSwitcher';
 
 const EGYPT_GOVERNORATES = [
   'القاهرة', 'الجيزة', 'الإسكندرية', 'الدقهلية', 'البحيرة', 'المنوفية',
@@ -19,6 +21,7 @@ type StoreSettings = {
   vodafone_cash_number: string; instapay_id: string; whatsapp_number: string;
   working_hours: string; facebook_url: string; instagram_url: string; tiktok_url: string;
   shipping_fees: Record<string, number>;
+  announcement: AnnouncementConfig;
 };
 
 const defaultSettings: StoreSettings = {
@@ -29,6 +32,7 @@ const defaultSettings: StoreSettings = {
   hero_image_url: '', contact_email: '', contact_phone: '', contact_address: '',
   vodafone_cash_number: '', instapay_id: '', whatsapp_number: '',
   working_hours: '', facebook_url: '', instagram_url: '', tiktok_url: '',
+  announcement: { ...DEFAULT_ANNOUNCEMENT },
   shipping_fees: {
     'القاهرة': 50, 'الجيزة': 50, 'الإسكندرية': 60, 'الدقهلية': 60,
     'البحيرة': 60, 'المنوفية': 60, 'القليوبية': 55, 'الشرقية': 65,
@@ -42,6 +46,7 @@ const defaultSettings: StoreSettings = {
 
 export const AdminSettings = () => {
   const { user } = useAuth();
+  const lang = useLanguage();
   const { toasts, addToast, removeToast } = useToasts();
   const [settings, setSettings] = useState<StoreSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
@@ -58,6 +63,7 @@ export const AdminSettings = () => {
         if (!loaded.shipping_fees || typeof loaded.shipping_fees !== 'object') {
           loaded.shipping_fees = defaultSettings.shipping_fees;
         }
+        loaded.announcement = { ...DEFAULT_ANNOUNCEMENT, ...(loaded.announcement || {}) };
         setSettings(loaded);
       }
     } catch { /* use defaults */ } finally { setLoading(false); }
@@ -184,6 +190,105 @@ export const AdminSettings = () => {
               </button>
             </div>
           )}
+        </Section>
+
+        <Section title="شريط الإعلانات المتحرك (الأعلى)">
+          <div className="flex items-center justify-between p-4 bg-cream/60 rounded-xl border-2 border-line">
+            <div>
+              <p className="font-bold text-ink text-sm">تفعيل شريط الإعلانات</p>
+              <p className="text-xs text-muted mt-0.5">يظهر أعلى المتجر كشريط متحرك (Marquee)</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={settings.announcement.enabled}
+              data-testid="announcement-toggle"
+              onClick={() => update('announcement', { ...settings.announcement, enabled: !settings.announcement.enabled })}
+              className={`relative w-16 h-9 rounded-full border-2 border-ink transition-colors shrink-0 ${
+                settings.announcement.enabled ? 'bg-sage' : 'bg-line'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 w-6 h-6 rounded-full bg-white border-2 border-ink transition-all ${
+                  settings.announcement.enabled ? 'right-0.5' : 'right-8'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-ink uppercase tracking-wide mb-1.5">النص بالعربية</label>
+            <input
+              value={settings.announcement.text_ar}
+              onChange={(e) => update('announcement', { ...settings.announcement, text_ar: e.target.value })}
+              dir="rtl"
+              placeholder="شحن مجاني للطلبات فوق 500 جنيه 🎨"
+              className="w-full border-2 border-line rounded-xl px-4 py-3 text-sm focus:border-terracotta focus:outline-none"
+              data-testid="announcement-ar"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-ink uppercase tracking-wide mb-1.5">النص بالإنجليزية</label>
+            <input
+              value={settings.announcement.text_en}
+              onChange={(e) => update('announcement', { ...settings.announcement, text_en: e.target.value })}
+              dir="ltr"
+              placeholder="Free shipping over 500 EGP 🎨"
+              className="w-full border-2 border-line rounded-xl px-4 py-3 text-sm focus:border-terracotta focus:outline-none"
+              data-testid="announcement-en"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-ink uppercase tracking-wide mb-1.5">لون الخلفية</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={settings.announcement.bg_color}
+                  onChange={(e) => update('announcement', { ...settings.announcement, bg_color: e.target.value })}
+                  className="w-12 h-12 rounded-xl border-2 border-line cursor-pointer"
+                  aria-label="Announcement background color"
+                  data-testid="announcement-bg-color"
+                />
+                <input
+                  value={settings.announcement.bg_color}
+                  onChange={(e) => update('announcement', { ...settings.announcement, bg_color: e.target.value })}
+                  dir="ltr"
+                  className="flex-1 min-w-0 border-2 border-line rounded-xl px-3 py-3 text-sm focus:border-terracotta focus:outline-none"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-ink uppercase tracking-wide mb-1.5">لون النص</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={settings.announcement.text_color}
+                  onChange={(e) => update('announcement', { ...settings.announcement, text_color: e.target.value })}
+                  className="w-12 h-12 rounded-xl border-2 border-line cursor-pointer"
+                  aria-label="Announcement text color"
+                  data-testid="announcement-text-color"
+                />
+                <input
+                  value={settings.announcement.text_color}
+                  onChange={(e) => update('announcement', { ...settings.announcement, text_color: e.target.value })}
+                  dir="ltr"
+                  className="flex-1 min-w-0 border-2 border-line rounded-xl px-3 py-3 text-sm focus:border-terracotta focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="rounded-xl border-2 border-ink overflow-hidden"
+            style={{ backgroundColor: settings.announcement.bg_color, color: settings.announcement.text_color }}
+          >
+            <div className="py-3 px-4 text-sm font-body whitespace-nowrap overflow-hidden text-ellipsis">
+              ✦ {(lang === 'ar' ? settings.announcement.text_ar : settings.announcement.text_en) || 'معاينة الشريط'}
+            </div>
+          </div>
         </Section>
 
         <Section title="وسائل التواصل الاجتماعي">
